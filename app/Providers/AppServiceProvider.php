@@ -12,7 +12,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Bind TenantService as singleton to maintain tenant state across requests
+        $this->app->singleton(\App\Services\TenantService::class);
     }
 
     /**
