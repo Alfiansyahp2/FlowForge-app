@@ -102,20 +102,11 @@ class WorkflowController extends Controller
     /**
      * Display the specified workflow.
      *
-     * @param string $id
+     * @param Workflow $workflow
      * @return WorkflowResource|JsonResponse
      */
-    public function show(string $id): WorkflowResource|JsonResponse
+    public function show(Workflow $workflow): WorkflowResource|JsonResponse
     {
-        // Explicit query with tenant scope applied
-        $workflow = Workflow::find($id);
-
-        if (!$workflow) {
-            return response()->json([
-                'message' => 'Workflow not found'
-            ], 404);
-        }
-
         $workflow->load(['currentVersion', 'creator']);
 
         return new WorkflowResource($workflow);

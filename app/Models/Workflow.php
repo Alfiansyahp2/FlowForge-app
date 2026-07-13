@@ -20,6 +20,48 @@ class Workflow extends Model
     protected static function booted(): void
     {
         static::addGlobalScope(new TenantScope);
+
+        static::creating(function ($workflow) {
+            $workflow->generateUniqueSlug();
+        });
+
+        static::updating(function ($workflow) {
+            if ($workflow->isDirty('name')) {
+                $workflow->generateUniqueSlug();
+            }
+        });
+    }
+
+    /**
+     * Generate a unique slug for the workflow based on its name.
+     */
+    public function generateUniqueSlug(): void
+    {
+        if (empty($this->name)) {
+            $this->slug = \Illuminate\Support\Str::slug('workflow-' . \Illuminate\Support\Str::random(6));
+            return;
+        }
+
+        $baseSlug = \Illuminate\Support\Str::slug($this->name);
+        $slug = $baseSlug;
+        $counter = 1;
+
+        while (static::withoutGlobalScopes()->where('tenant_id', $this->tenant_id)->where('slug', $slug)->where('id', '!=', $this->id)->exists()) {
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
+
+        $this->slug = $slug;
+    }
+
+    /**
+     * Get the route key for the model.
+     *
+     * @return string
+     */
+    public function getRouteKeyName()
+    {
+        return 'slug';
     }
 
     /**
@@ -31,6 +73,7 @@ class Workflow extends Model
         'tenant_id',
         'created_by',
         'name',
+        'slug',
         'description',
         'status',
         'current_version_id',
