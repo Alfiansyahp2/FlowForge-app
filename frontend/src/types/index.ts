@@ -14,6 +14,7 @@ export interface Tenant {
 
 export interface Workflow {
   id: string;
+  slug: string;
   tenant_id: string;
   created_by: string;
   current_version_id: string | null;

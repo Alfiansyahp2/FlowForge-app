@@ -57,7 +57,7 @@ export default function App() {
         <Route path="/login"    element={<GuestRoute><LoginPage /></GuestRoute>} />
         <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
         <Route path="/dashboard"      element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-        <Route path="/workflows/:id"  element={<ProtectedRoute><WorkflowEditorPage /></ProtectedRoute>} />
+        <Route path="/workflows/:slug"  element={<ProtectedRoute><WorkflowEditorPage /></ProtectedRoute>} />
         <Route path="/runs"           element={<ProtectedRoute><WorkflowRunsPage /></ProtectedRoute>} />
         <Route path="/runs/:id"       element={<ProtectedRoute><WorkflowRunsPage /></ProtectedRoute>} />
         <Route path="/"  element={<Navigate to="/dashboard" replace />} />

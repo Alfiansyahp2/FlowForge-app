@@ -64,12 +64,12 @@ function RunStatusBadge({ status }: { status: string }) {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function WorkflowEditorPage() {
-  const { id }      = useParams();
+  const { slug }    = useParams();
   const navigate    = useNavigate();
   const { can, role } = usePermissions();
   const { confirm, denied, success } = useModalStore();
 
-  const isNew      = id === 'new';
+  const isNew      = slug === 'new';
   const canEdit    = can('edit workflows');
   const canCreate  = can('create workflows');
   const canExecute = can('execute workflows');
@@ -96,8 +96,8 @@ export default function WorkflowEditorPage() {
 
   // ── Load workflow ─────────────────────────────────────────────────────────
   useEffect(() => {
-    if (id && !isNew) {
-      loadWorkflow(id);
+    if (slug && !isNew) {
+      loadWorkflow(slug);
     } else if (isNew) {
       // Reset for new workflow
       setName('');
@@ -106,7 +106,7 @@ export default function WorkflowEditorPage() {
       setNodes([]);
       setEdges([]);
     }
-  }, [id, isNew]);
+  }, [slug, isNew]);
 
   const loadWorkflow = async (workflowId: string) => {
     try {
@@ -165,10 +165,10 @@ export default function WorkflowEditorPage() {
 
   // ── Load runs ─────────────────────────────────────────────────────────────
   const loadRuns = async () => {
-    if (isNew || !id) return;
+    if (isNew || !workflow?.id) return;
     setRunsLoading(true);
     try {
-      const res = await runsApi.list({ workflow_id: id });
+      const res = await runsApi.list({ workflow_id: workflow.id });
       setRuns(res.data ?? []);
     } catch (err) {
       console.error('Failed to load runs', err);
@@ -192,7 +192,7 @@ export default function WorkflowEditorPage() {
 
   // ── WebSockets Real-Time Monitoring ──────────────────────────────────────────
   useEffect(() => {
-    if (isNew || !id) return;
+    if (isNew || !workflow?.id) return;
 
     let ws: WebSocket | null = null;
     let reconnectTimeout: number;
@@ -223,7 +223,7 @@ export default function WorkflowEditorPage() {
           console.log('WebSocket Connected to Reverb');
           ws?.send(JSON.stringify({
             event: 'pusher:subscribe',
-            data: { channel: `workflows.${id}` }
+            data: { channel: `workflows.${workflow.id}` }
           }));
         };
 
@@ -279,7 +279,7 @@ export default function WorkflowEditorPage() {
       if (ws) ws.close();
       clearTimeout(reconnectTimeout);
     };
-  }, [id, isNew]);
+  }, [workflow?.id, isNew]);
 
   // ── Canvas Node Styling based on step run status ──────────────────────────────
   useEffect(() => {
@@ -411,15 +411,15 @@ export default function WorkflowEditorPage() {
               throw new Error('Server response missing workflow ID');
             }
             success(`Workflow "${name}" created.`);
-            navigate(`/workflows/${created.id}`);
+            navigate(`/workflows/${created.slug}`);
           } else {
-            await workflowApi.update(id!, {
+            await workflowApi.update(slug!, {
               name,
               description,
               definition: definitionString  // Send as STRING
             });
             success(`Workflow "${name}" saved.`);
-            loadWorkflow(id!);
+            loadWorkflow(slug!);
           }
         } catch (err) {
           const errorMsg = err instanceof Error ? err.message : 'Unknown error';
@@ -461,7 +461,7 @@ export default function WorkflowEditorPage() {
       onConfirm: async () => {
         setIsRunning(true);
         try {
-          const result = await workflowApi.run(id!);
+          const result = await workflowApi.run(slug!);
           success(`Workflow "${name}" started.`);
           setSidePanel('runs');
           setTimeout(loadRuns, 800);

@@ -518,12 +518,12 @@ export default function DashboardPage() {
 
                     {can('edit workflows') ? (
                       <Button className="w-full" variant="outline" size="sm"
-                        onClick={() => navigate(`/workflows/${workflow.id}`)}>
+                        onClick={() => navigate(`/workflows/${workflow.slug}`)}>
                         Edit Workflow
                       </Button>
                     ) : (
                       <Button className="w-full" variant="ghost" size="sm"
-                        onClick={() => navigate(`/workflows/${workflow.id}`)}>
+                        onClick={() => navigate(`/workflows/${workflow.slug}`)}>
                         <Eye className="w-3 h-3 mr-1.5" />
                         View Workflow
                       </Button>

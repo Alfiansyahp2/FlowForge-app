@@ -71,7 +71,7 @@ function App() {
           }
         />
         <Route
-          path="/workflows/:id"
+          path="/workflows/:slug"
           element={
             <ProtectedRoute>
               <WorkflowEditorPage />
