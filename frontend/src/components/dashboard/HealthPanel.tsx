@@ -21,13 +21,6 @@ export function HealthPanel() {
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    loadMetrics();
-    // Refresh every 30 seconds
-    const interval = setInterval(loadMetrics, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
   const loadMetrics = async () => {
     try {
       // Fetch runs from the last 24 hours

@@ -42,10 +42,6 @@ export function RunHistoryList({ tenantId, onError }: Props) {
   const [total, setTotal] = useState(0);
   const perPage = 10;
 
-  useEffect(() => {
-    loadRuns();
-  }, [statusFilter, page]);
-
   const loadRuns = async () => {
     try {
       setIsLoading(true);
@@ -64,6 +60,10 @@ export function RunHistoryList({ tenantId, onError }: Props) {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadRuns();
+  }, [statusFilter, page]);
 
   const formatDuration = (ms: number | null) => {
     if (!ms) return '-';

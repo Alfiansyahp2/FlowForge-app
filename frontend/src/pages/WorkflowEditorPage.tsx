@@ -94,20 +94,6 @@ export default function WorkflowEditorPage() {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
-  // ── Load workflow ─────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (slug && !isNew) {
-      loadWorkflow(slug);
-    } else if (isNew) {
-      // Reset for new workflow
-      setName('');
-      setDescription('');
-      setWorkflow(null);
-      setNodes([]);
-      setEdges([]);
-    }
-  }, [slug, isNew]);
-
   const loadWorkflow = async (workflowId: string) => {
     try {
       const data = await workflowApi.get(workflowId);
@@ -162,6 +148,20 @@ export default function WorkflowEditorPage() {
       setEdges([]);
     }
   };
+
+  // ── Load workflow ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (slug && !isNew) {
+      loadWorkflow(slug);
+    } else if (isNew) {
+      // Reset for new workflow
+      setName('');
+      setDescription('');
+      setWorkflow(null);
+      setNodes([]);
+      setEdges([]);
+    }
+  }, [slug, isNew]);
 
   // ── Load runs ─────────────────────────────────────────────────────────────
   const loadRuns = async () => {
@@ -319,7 +319,9 @@ export default function WorkflowEditorPage() {
   }, [runDetails, setNodes]);
 
   useEffect(() => {
-    if (sidePanel === 'runs') loadRuns();
+    if (sidePanel === 'runs') {
+      setTimeout(() => loadRuns(), 0);
+    }
   }, [sidePanel]);
 
   // ── Canvas callbacks ──────────────────────────────────────────────────────

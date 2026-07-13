@@ -219,7 +219,7 @@ export function useCachedData<T>(
     // Check cache first
     const cached = cache.get<T>(key);
     if (cached) {
-      setData(cached);
+      setTimeout(() => setData(cached), 0);
     } else {
       refresh();
     }

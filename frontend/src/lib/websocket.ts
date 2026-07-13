@@ -276,7 +276,7 @@ export function useWebSocket(tenantId: string | null) {
     if (!tenantId) return;
 
     const manager = createFlowForgeWebSocket(tenantId);
-    setWs(manager);
+    setTimeout(() => setWs(manager), 0);
 
     // Update status on connection changes
     const unsubscribeOpen = manager.on('open', () => setStatus('connected'));

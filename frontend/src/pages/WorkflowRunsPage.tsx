@@ -49,34 +49,31 @@ export default function WorkflowRunsPage() {
   const [dateTo, setDateTo] = useState('');
   const [pagination, setPagination] = useState({ current_page: 1, per_page: 20, total: 0 });
 
-  useEffect(() => {
-    loadRuns();
-  }, [statusFilter, workflowFilter, dateFrom, dateTo, pagination.current_page]);
-
   const loadRuns = async () => {
     try {
       setIsLoading(true);
-      const response = await runsApi.list({
-        status: statusFilter,
-        workflow_id: workflowFilter,
-        date_from: dateFrom,
-        date_to: dateTo,
+      const res = await runsApi.list({
+        status: statusFilter === 'all' ? undefined : statusFilter,
+        workflow_id: workflowFilter === 'all' ? undefined : workflowFilter,
+        from_date: dateFrom || undefined,
+        to_date: dateTo || undefined,
         page: pagination.current_page,
         per_page: pagination.per_page,
       });
-
-      setRuns(response.data || []);
-      setPagination({
-        current_page: response.current_page || 1,
-        per_page: response.per_page || 20,
-        total: response.total || 0,
-      });
-    } catch (error) {
-      console.error('Failed to load workflow runs:', error);
+      setRuns(res.data || []);
+      if (res.meta) {
+        setPagination(res.meta);
+      }
+    } catch (err) {
+      console.error('Failed to load runs:', err);
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadRuns();
+  }, [statusFilter, workflowFilter, dateFrom, dateTo, pagination.current_page]);
 
   const handleRunClick = (runId: string) => {
     navigate(`/runs/${runId}`);

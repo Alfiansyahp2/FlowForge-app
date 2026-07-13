@@ -358,10 +358,6 @@ export default function UserManagementPage() {
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [roleTarget, setRoleTarget] = useState<UserRecord | null>(null);
 
-  useEffect(() => {
-    loadUsers();
-  }, [search, roleFilter]);
-
   const loadUsers = async (page = 1) => {
     setIsLoading(true);
     try {
@@ -379,6 +375,10 @@ export default function UserManagementPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadUsers();
+  }, [search, roleFilter]);
 
   const handleDelete = (user: UserRecord) => {
     if (!can('delete users')) {

@@ -109,8 +109,6 @@ export default function DashboardPage() {
     });
   }, [user, isAdmin, activeSection]);
 
-  useEffect(() => { loadWorkflows(); }, []);
-
   const loadWorkflows = async () => {
     try {
       const response = await workflowApi.list();
@@ -121,6 +119,8 @@ export default function DashboardPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => { loadWorkflows(); }, []);
 
   // ── Logout ───────────────────────────────────────────────────────────────
   const handleLogout = () => {

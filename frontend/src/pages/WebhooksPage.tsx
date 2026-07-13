@@ -129,10 +129,6 @@ export default function WebhooksPage() {
   const [editTarget, setEditTarget] = useState<Webhook | null>(null);
   const [copied, setCopied]       = useState<string | null>(null);
 
-  useEffect(() => {
-    loadAll();
-  }, []);
-
   const loadAll = async () => {
     setIsLoading(true);
     try {
@@ -148,6 +144,10 @@ export default function WebhooksPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadAll();
+  }, []);
 
   const handleCopyUrl = async (url: string, id: string) => {
     await navigator.clipboard.writeText(url);

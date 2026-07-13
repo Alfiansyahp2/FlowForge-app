@@ -207,23 +207,23 @@ export default function SchedulesPage() {
   const [showForm, setShowForm]   = useState(false);
   const [editTarget, setEditTarget] = useState<Schedule | null>(null);
 
-  useEffect(() => { loadAll(); }, []);
-
   const loadAll = async () => {
     setIsLoading(true);
     try {
-      const [scRes, wfRes] = await Promise.all([
-        scheduleApi.list(),
-        workflowApi.list({ per_page: 100 }),
+      const [schedRes, wfRes] = await Promise.all([
+        schedulesApi.list(),
+        workflowApi.list()
       ]);
-      setSchedules(scRes.data ?? []);
-      setWorkflows(wfRes.data ?? []);
+      setSchedules(schedRes.data || []);
+      setWorkflows(wfRes.data || []);
     } catch (err) {
-      console.error('Failed to load schedules', err);
+      console.error('Failed to load data:', err);
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => { loadAll(); }, []);
 
   const handleToggle = (schedule: Schedule) => {
     if (!can('edit schedules')) { denied('edit schedules'); return; }
