@@ -37,7 +37,27 @@ jobs:
       run: php -r "file_exists('.env') || copy('.env.example', '.env');"
 
     - name: Install Dependencies
-      run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+      run: composer install --no-ansi --no-interaction --no-progress --prefer-dist
+
+    - name: (Optional) Install Pest if missing
+      run: |
+        if [ ! -f vendor/bin/pest ]; then
+          composer require --dev pestphp/pest pestphp/pest-plugin-laravel --no-interaction --prefer-dist
+        fi
+
+    - name: Wait for Postgres
+      run: |
+        for i in $(seq 1 30); do
+          if pg_isready -h 127.0.0.1 -p 5432; then
+            echo "Postgres is ready"
+            break
+          fi
+          echo "Waiting for Postgres..."
+          sleep 1
+        done
+
+    - name: Sanity check vendor
+      run: ls -la vendor/bin || true
 
     - name: Generate key
       run: php artisan key:generate
@@ -53,7 +73,7 @@ jobs:
         DB_DATABASE: testing
         DB_USERNAME: root
         DB_PASSWORD: password
-      run: vendor/bin/pest
+      run: ./vendor/bin/pest --colors
 
   frontend-build:
     runs-on: ubuntu-latest
