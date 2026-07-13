@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { runsApi } from '../../services/api';
 import type { WorkflowRun, StepRun, WorkflowDefinition } from '../../types';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
@@ -59,10 +59,10 @@ export function WorkflowRunVisualizer({ runId, onBack }: WorkflowRunVisualizerPr
     try {
       setIsLoading(true);
       const response = await runsApi.get(runId);
-      setRun(response.data);
+      setRun(response as any); // Type cast if necessary, though runsApi.get returns WorkflowRun
 
       // Build visualization from workflow definition and step runs
-      buildVisualization(response.data);
+      buildVisualization(response as any);
     } catch (error) {
       console.error('Failed to load run details:', error);
     } finally {
@@ -97,7 +97,7 @@ export function WorkflowRunVisualizer({ runId, onBack }: WorkflowRunVisualizerPr
               {stepRun && (
                 <div className="mt-2">
                   <StepStatusBadge status={stepRun.status} />
-                  {stepRun.duration > 0 && (
+                  {(stepRun.duration ?? 0) > 0 && (
                     <div className="text-xs text-gray-500 mt-1">{stepRun.duration}ms</div>
                   )}
                   {stepRun.error_message && (
@@ -275,7 +275,7 @@ export function WorkflowRunVisualizer({ runId, onBack }: WorkflowRunVisualizerPr
                             Finished: {new Date(step.finished_at).toLocaleString()}
                           </span>
                         )}
-                        {step.duration > 0 && <span className="ml-3">Duration: {step.duration}ms</span>}
+                        {(step.duration ?? 0) > 0 && <span className="ml-3">Duration: {step.duration}ms</span>}
                       </div>
                     </div>
                   </div>

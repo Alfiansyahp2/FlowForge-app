@@ -155,7 +155,7 @@ class SafeExpressionEvaluatorTest extends TestCase
         $variables = ['deleted_at' => null, 'created_at' => '2025-01-01'];
 
         $result = $this->evaluator->evaluate('isset({deleted_at})', $variables);
-        $this->assertTrue($result);
+        $this->assertFalse($result); // isset(null) is false
 
         $result = $this->evaluator->evaluate('is_null({deleted_at})', $variables);
         $this->assertTrue($result);

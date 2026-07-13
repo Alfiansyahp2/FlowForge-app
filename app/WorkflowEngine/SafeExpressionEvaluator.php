@@ -137,6 +137,11 @@ class SafeExpressionEvaluator
         // Process operators with proper precedence
         while (!empty($tokens)) {
             $operator = $tokens[0];
+
+            if ($operator === ')') {
+                break;
+            }
+
             $opPrecedence = $this->getOperatorPrecedence($operator);
 
             if ($opPrecedence < $precedence) {
@@ -203,7 +208,11 @@ class SafeExpressionEvaluator
         }
 
         // Handle functions
-        if ($token === 'isset(' || $token === 'empty(' || $token === 'is_null(') {
+        if (in_array($token, ['isset', 'empty', 'is_null'])) {
+            if (empty($tokens) || $tokens[0] !== '(') {
+                throw new Exception("Expected '(' after function {$token}");
+            }
+            array_shift($tokens); // remove '('
             return $this->evaluateFunction($token, $tokens);
         }
 
@@ -227,11 +236,11 @@ class SafeExpressionEvaluator
         }
 
         switch ($function) {
-            case 'isset(':
+            case 'isset':
                 return $operand !== null;
-            case 'empty(':
+            case 'empty':
                 return empty($operand);
-            case 'is_null(':
+            case 'is_null':
                 return $operand === null;
             default:
                 throw new Exception("Unknown function: {$function}");
@@ -251,6 +260,8 @@ class SafeExpressionEvaluator
             '&&' => 2,
             '==' => 3, '!=' => 3,
             '>' => 4, '<' => 4, '>=' => 4, '<=' => 4,
+            '+' => 5, '-' => 5,
+            '*' => 6, '/' => 6,
         ];
 
         return $precedence[$operator] ?? 0;
@@ -284,6 +295,14 @@ class SafeExpressionEvaluator
                 return $this->toBoolean($left) && $this->toBoolean($right);
             case '||':
                 return $this->toBoolean($left) || $this->toBoolean($right);
+            case '+':
+                return $left + $right;
+            case '-':
+                return $left - $right;
+            case '*':
+                return $left * $right;
+            case '/':
+                return $right != 0 ? $left / $right : 0;
             default:
                 throw new Exception("Unknown operator: {$operator}");
         }

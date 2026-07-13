@@ -231,6 +231,8 @@ class WorkflowExecutor
             ->timeout($data['timeout'] ?? 30)
             ->send($method, $url, $body ? ['body' => $body] : []);
 
+        $response->throw();
+
         return [
             'status' => $response->status(),
             'headers' => $response->headers(),

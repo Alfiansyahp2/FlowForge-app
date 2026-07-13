@@ -55,8 +55,8 @@ export default function WorkflowRunsPage() {
       const res = await runsApi.list({
         status: statusFilter === 'all' ? undefined : statusFilter,
         workflow_id: workflowFilter === 'all' ? undefined : workflowFilter,
-        from_date: dateFrom || undefined,
-        to_date: dateTo || undefined,
+        date_from: dateFrom || undefined,
+        date_to: dateTo || undefined,
         page: pagination.current_page,
         per_page: pagination.per_page,
       });

@@ -15,7 +15,7 @@ export function LiveRunsMonitor({ tenantId, onError }: LiveRunsMonitorProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Load active runs
   const loadActiveRuns = useCallback(async (showRefreshingState = false) => {

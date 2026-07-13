@@ -12,7 +12,7 @@ interface ConfirmState {
 
 interface ConfirmModalStore {
   isOpen: boolean;
-  config: ConfirmState | null;
+  config: Omit<ConfirmState, 'isOpen'> | null;
   openConfirm: (config: Omit<ConfirmState, 'isOpen'>) => void;
   closeConfirm: () => void;
 }

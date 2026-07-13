@@ -211,7 +211,7 @@ export default function SchedulesPage() {
     setIsLoading(true);
     try {
       const [schedRes, wfRes] = await Promise.all([
-        schedulesApi.list(),
+        scheduleApi.list(),
         workflowApi.list()
       ]);
       setSchedules(schedRes.data || []);

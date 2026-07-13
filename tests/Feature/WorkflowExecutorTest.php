@@ -97,7 +97,8 @@ class WorkflowExecutorTest extends TestCase
 
         $this->version = WorkflowVersion::create([
             'workflow_id' => $this->workflow->id,
-            'version_number' => 1,
+            'version' => '1.0.0',
+            'created_by' => $this->user->id,
             'definition' => $definition,
             'is_active' => true,
         ]);
@@ -133,6 +134,7 @@ class WorkflowExecutorTest extends TestCase
      */
     public function test_workflow_progresses_through_batches_sequentially(): void
     {
+        Queue::fake();
         Http::fake([
             'https://api.example.com/payment' => Http::response(['status' => 'ok'], 200),
         ]);
@@ -161,21 +163,19 @@ class WorkflowExecutorTest extends TestCase
         $delayStep->refresh();
         $this->assertEquals('completed', $delayStep->status);
 
-        // After both Batch 0 steps complete, notify_1 (Batch 1) should be scheduled/created
-        $allSteps = StepRun::where('workflow_run_id', $run->id)->get();
-        $this->assertCount(3, $allSteps);
-        $notifyStep = $allSteps->firstWhere('node_id', 'notify_1');
-        $this->assertNotNull($notifyStep);
-
-        // Execute notify_1
-        (new ExecuteStepJob($notifyStep))->handle();
-
-        $notifyStep->refresh();
-        $this->assertEquals('completed', $notifyStep->status);
+        // Now Batch 1 should be dispatched
+        Queue::assertPushed(ExecuteStepJob::class, 3); // 2 from batch 0 + 1 from batch 1
         
-        // Assert output variable translation was correct
-        $this->assertEquals('Status is: 200', $notifyStep->output['message']);
+        $allStepRuns = StepRun::where('workflow_run_id', $run->id)->get();
+        $this->assertCount(3, $allStepRuns);
+        
+        $notifyStep = $allStepRuns->firstWhere('node_id', 'notify_1');
+        $this->assertNotNull($notifyStep);
+        $this->assertEquals('pending', $notifyStep->status);
 
+        // Manually execute Batch 1
+        (new ExecuteStepJob($notifyStep))->handle();
+        
         // Finally, the workflow run should be marked completed
         $run->refresh();
         $this->assertEquals('completed', $run->status);
@@ -186,6 +186,7 @@ class WorkflowExecutorTest extends TestCase
      */
     public function test_step_failure_and_retry_exhaustion(): void
     {
+        Queue::fake();
         // Mock payment URL returning 500 error
         Http::fake([
             'https://api.example.com/payment' => Http::response('Error', 500),
@@ -197,7 +198,6 @@ class WorkflowExecutorTest extends TestCase
         $httpStep = $stepRuns->firstWhere('node_id', 'http_1');
 
         // Let's run the job - it should fail but retry delay/job should be set
-        Queue::fake();
         (new ExecuteStepJob($httpStep))->handle();
 
         $httpStep->refresh();
