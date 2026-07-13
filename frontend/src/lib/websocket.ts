@@ -22,7 +22,7 @@ class WebSocketManager {
   private ws: WebSocket | null = null;
   private config: WebSocketConfig;
   private reconnectAttempts = 0;
-  private reconnectTimer: NodeJS.Timeout | null = null;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private isManualClose = false;
   private subscriptions: Map<string, ChannelSubscription> = new Map();
   private globalListeners: Map<WebSocketEvent, Set<WebSocketEventListener>> = new Map();

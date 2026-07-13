@@ -33,15 +33,9 @@ function App() {
 
   useEffect(() => {
     // Load user on mount
-    const loadUser = async () => {
+    const initAuth = async () => {
       try {
-        const token = localStorage.getItem('token');
-        if (token) {
-          // Check if token is still valid by fetching user
-          const { loadUser } = await import('./lib/store-simple');
-          const useStore = await import('zustand').then(m => m.create);
-          // Will be handled by the actual store
-        }
+        await useAuthStore.getState().loadUser();
       } catch (error) {
         console.error('Failed to load user:', error);
       } finally {
@@ -49,7 +43,7 @@ function App() {
       }
     };
 
-    loadUser();
+    initAuth();
   }, []);
 
   if (!isReady) {
