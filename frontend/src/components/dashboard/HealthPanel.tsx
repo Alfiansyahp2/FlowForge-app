@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { workflowApi, runsApi } from '../../services/api';
+import { runsApi } from '../../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Activity, CheckCircle, XCircle, Clock, TrendingUp } from 'lucide-react';
 
@@ -63,6 +63,10 @@ export function HealthPanel() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadMetrics();
+  }, []);
 
   const statCards = [
     {

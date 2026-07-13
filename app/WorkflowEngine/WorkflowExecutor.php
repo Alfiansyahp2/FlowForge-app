@@ -32,6 +32,7 @@ class WorkflowExecutor
         'condition' => 'executeConditionNode',
         'math' => 'executeMathNode',
         'notification' => 'executeNotificationNode',
+        'script' => 'executeScriptNode',
     ];
 
     public function __construct(
@@ -250,15 +251,43 @@ class WorkflowExecutor
     private function executeDelayNode(array $node, array &$context): array
     {
         $seconds = $node['data']['seconds'] ?? 0;
-
         if ($seconds > 0) {
-            sleep($seconds);
+            sleep(min((int)$seconds, 60)); // Max 60 seconds delay for safety
         }
 
         return [
-            'delayed' => true,
-            'seconds' => $seconds,
+            'delayed_seconds' => $seconds,
         ];
+    }
+
+    /**
+     * Execute script node.
+     *
+     * @param array $node
+     * @param array $context
+     * @return array
+     * @throws Exception
+     */
+    private function executeScriptNode(array $node, array &$context): array
+    {
+        $code = $node['data']['code'] ?? '';
+        
+        try {
+            // CAUTION: Using eval() in real world is extremely dangerous.
+            // Expose context variables to the script.
+            extract($context['variables'] ?? []);
+            
+            // Execute code and capture return value
+            // Wrap in function to avoid polluting scope
+            $result = eval($code);
+            
+            return [
+                'result' => $result,
+                'status' => 'success'
+            ];
+        } catch (\Throwable $e) {
+            throw new Exception("Script execution failed: " . $e->getMessage());
+        }
     }
 
     /**

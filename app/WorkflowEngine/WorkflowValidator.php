@@ -16,6 +16,7 @@ class WorkflowValidator
         'condition',
         'math',
         'notification',
+        'script',
     ];
 
     // Required fields per node type
@@ -25,6 +26,7 @@ class WorkflowValidator
         'condition' => ['expression'],
         'math' => ['expression'],
         'notification' => ['message'],
+        'script' => ['code'],
     ];
 
     public function __construct(CycleDetector $cycleDetector)

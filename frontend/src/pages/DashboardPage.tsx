@@ -150,7 +150,7 @@ export default function DashboardPage() {
       icon: 'delete',
       confirmLabel: 'Delete',
       onConfirm: async () => {
-        await workflowApi.delete(workflow.id);
+        await workflowApi.delete(workflow.slug);
         success(`"${workflow.name}" has been deleted.`);
         loadWorkflows();
       },
@@ -174,10 +174,10 @@ export default function DashboardPage() {
       confirmLabel: isActive ? 'Archive' : 'Activate',
       onConfirm: async () => {
         if (isActive) {
-          await workflowApi.archive(workflow.id);
+          await workflowApi.archive(workflow.slug);
           success(`"${workflow.name}" has been archived.`);
         } else {
-          await workflowApi.activate(workflow.id);
+          await workflowApi.activate(workflow.slug);
           success(`"${workflow.name}" is now active.`);
         }
         loadWorkflows();
@@ -198,7 +198,7 @@ export default function DashboardPage() {
       icon: 'run',
       confirmLabel: 'Run now',
       onConfirm: async () => {
-        await workflowApi.run(workflow.id);
+        await workflowApi.run(workflow.slug);
         success(`Workflow "${workflow.name}" started successfully.`);
         loadWorkflows();
       },
