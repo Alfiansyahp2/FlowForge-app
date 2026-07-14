@@ -46,8 +46,8 @@ class SafeExpressionEvaluator
     {
         foreach ($variables as $key => $value) {
             // Support both {key} and $key formats
-            $expression = str_replace("{{$key}}", $this->valueToString($value), $expression);
-            $expression = str_replace("{$key}", $this->valueToString($value), $expression);
+            $expression = str_replace('{' . $key . '}', $this->valueToString($value), $expression);
+            $expression = str_replace('$' . $key, $this->valueToString($value), $expression);
         }
 
         return $expression;
