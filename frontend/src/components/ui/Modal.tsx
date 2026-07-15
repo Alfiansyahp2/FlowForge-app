@@ -57,6 +57,12 @@ interface SuccessConfig {
   duration?: number;
 }
 
+interface ErrorConfig {
+  title?: string;
+  message: string;
+  duration?: number;
+}
+
 interface ModalStore {
   // Confirm modal
   confirmOpen: boolean;
@@ -71,6 +77,10 @@ interface ModalStore {
   // Success modal
   successOpen: boolean;
   successConfig: SuccessConfig | null;
+
+  // Error modal
+  errorOpen: boolean;
+  errorConfig: ErrorConfig | null;
 
   // Actions
   confirm: (config: ConfirmConfig) => void;

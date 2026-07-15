@@ -6,6 +6,7 @@ import {
   BackgroundVariant, Panel,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import axios from 'axios';
 import { workflowApi, runsApi } from '../services/api';
 import { usePermissions } from '../hooks/usePermissions';
 import { useModalStore } from '../components/ui/Modal';
