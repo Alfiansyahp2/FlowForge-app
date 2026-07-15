@@ -81,6 +81,9 @@ interface ModalStore {
 
   success: (message: string, title?: string, duration?: number) => void;
   closeSuccess: () => void;
+
+  error: (message: string, title?: string, duration?: number) => void;
+  closeError: () => void;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -99,6 +102,9 @@ export const useModalStore = create<ModalStore>((set) => ({
   successOpen: false,
   successConfig: null,
 
+  errorOpen: false,
+  errorConfig: null,
+
   confirm: (config) => set({ confirmOpen: true, confirmConfig: config, confirmLoading: false }),
   closeConfirm: () => set({ confirmOpen: false, confirmConfig: null, confirmLoading: false }),
 
@@ -109,6 +115,10 @@ export const useModalStore = create<ModalStore>((set) => ({
   success: (message, title, duration) =>
     set({ successOpen: true, successConfig: { message, title, duration } }),
   closeSuccess: () => set({ successOpen: false, successConfig: null }),
+
+  error: (message, title, duration) =>
+    set({ errorOpen: true, errorConfig: { message, title, duration } }),
+  closeError: () => set({ errorOpen: false, errorConfig: null }),
 }));
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -381,6 +391,43 @@ function SuccessModalComponent() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// ErrorModal
+// ─────────────────────────────────────────────────────────────────────────────
+
+function ErrorModalComponent() {
+  const { errorOpen, errorConfig, closeError } = useModalStore();
+
+  // Auto-close
+  if (errorOpen && errorConfig) {
+    const duration = errorConfig.duration ?? 5000;
+    if (duration > 0) {
+      setTimeout(closeError, duration);
+    }
+  }
+
+  if (!errorOpen || !errorConfig) return null;
+
+  return (
+    <div className="fixed bottom-6 left-6 z-50 animate-in slide-in-from-bottom-4 duration-300">
+      <div className="bg-white rounded-xl shadow-lg border border-red-100 p-4 flex items-start gap-3 max-w-sm">
+        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
+          <X className="w-4 h-4 text-red-600" />
+        </div>
+        <div className="flex-1 min-w-0">
+          {errorConfig.title && (
+            <p className="text-sm font-semibold text-gray-900">{errorConfig.title}</p>
+          )}
+          <p className="text-sm text-gray-600 break-words">{errorConfig.message}</p>
+        </div>
+        <button onClick={closeError} className="text-gray-300 hover:text-gray-500 transition-colors flex-shrink-0">
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // GlobalModals — mount once in App.tsx
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -390,6 +437,7 @@ export function GlobalModals() {
       <ConfirmModalComponent />
       <PermissionDeniedModalComponent />
       <SuccessModalComponent />
+      <ErrorModalComponent />
     </>
   );
 }

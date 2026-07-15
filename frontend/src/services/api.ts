@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useModalStore } from '../components/ui/Modal';
 import type {
   AuthResponse,
   LoginRequest,
@@ -49,6 +50,8 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+
+
 // Response interceptor to handle Laravel Resource formats
 api.interceptors.response.use(
   (response) => {
@@ -94,7 +97,12 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    const message = error.response?.data?.message || error.message || 'An unexpected error occurred';
     console.error('API Error:', error.response?.data || error.message);
+    
+    // Trigger global error toast
+    useModalStore.getState().error(message, 'API Error');
+    
     return Promise.reject(error);
   }
 );
