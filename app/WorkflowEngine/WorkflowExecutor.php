@@ -261,7 +261,7 @@ class WorkflowExecutor
     }
 
     /**
-     * Execute script node.
+     * Execute script node safely.
      *
      * @param array $node
      * @param array $context
@@ -273,13 +273,10 @@ class WorkflowExecutor
         $code = $node['data']['code'] ?? '';
         
         try {
-            // CAUTION: Using eval() in real world is extremely dangerous.
-            // Expose context variables to the script.
-            extract($context['variables'] ?? []);
-            
-            // Execute code and capture return value
-            // Wrap in function to avoid polluting scope
-            $result = eval($code);
+            // Use safe expression evaluator instead of dangerous eval()
+            // Note: This limits scripts to mathematical and logical expressions.
+            // If full PHP execution is needed, a dedicated sandbox service should be used.
+            $result = $this->expressionEvaluator->evaluate($code, $context['variables'] ?? []);
             
             return [
                 'result' => $result,
