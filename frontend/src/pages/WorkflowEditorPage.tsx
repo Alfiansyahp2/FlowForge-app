@@ -792,6 +792,14 @@ export default function WorkflowEditorPage() {
                           {step.error_message && (
                             <p className="text-red-600 text-[11px]">Error: {step.error_message}</p>
                           )}
+                          {step.output && Object.keys(step.output).length > 0 && (
+                            <div className="mt-2">
+                              <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Output:</p>
+                              <pre className="text-[10px] bg-gray-800 text-gray-200 p-2 rounded overflow-x-auto">
+                                {JSON.stringify(step.output, null, 2)}
+                              </pre>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>

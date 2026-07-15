@@ -49,6 +49,10 @@ export default function WorkflowRunsPage() {
   const [dateTo, setDateTo] = useState('');
   const [pagination, setPagination] = useState({ current_page: 1, per_page: 20, total: 0 });
 
+  const [expandedRunId, setExpandedRunId] = useState<string | null>(null);
+  const [expandedRunDetails, setExpandedRunDetails] = useState<WorkflowRun | null>(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
+
   const loadRuns = async () => {
     try {
       setIsLoading(true);
@@ -75,8 +79,21 @@ export default function WorkflowRunsPage() {
     loadRuns();
   }, [statusFilter, workflowFilter, dateFrom, dateTo, pagination.current_page]);
 
-  const handleRunClick = (runId: string) => {
-    navigate(`/runs/${runId}`);
+  const handleRunClick = async (runId: string) => {
+    if (expandedRunId === runId) {
+      setExpandedRunId(null);
+      return;
+    }
+    setExpandedRunId(runId);
+    setLoadingDetails(true);
+    try {
+      const res = await runsApi.get(runId);
+      setExpandedRunDetails(res);
+    } catch (err) {
+      console.error('Failed to load run details:', err);
+    } finally {
+      setLoadingDetails(false);
+    }
   };
 
   const getStatusIcon = (status: string) => {
@@ -273,12 +290,63 @@ export default function WorkflowRunsPage() {
                         <div className="p-2 bg-gray-50 rounded">
                           {getStatusIcon(run.status)}
                         </div>
-                        <ArrowRight className="w-4 h-4 text-gray-400" />
+                        <ArrowRight
+                          className={`w-4 h-4 text-gray-400 transition-transform ${expandedRunId === run.id ? 'rotate-90' : ''}`}
+                        />
                       </div>
                     </div>
 
-                    {/* Step summary */}
-                    {run.step_runs && run.step_runs.length > 0 && (
+                    {/* Step summary & Detailed Expansion */}
+                    {expandedRunId === run.id && (
+                      <div className="mt-4 pt-4 border-t border-gray-100 cursor-default" onClick={(e) => e.stopPropagation()}>
+                        <h4 className="text-sm font-semibold mb-3">Execution Details</h4>
+                        
+                        {loadingDetails ? (
+                          <div className="flex items-center text-sm text-gray-500">
+                            <Loader className="w-4 h-4 animate-spin mr-2" />
+                            Loading details...
+                          </div>
+                        ) : expandedRunDetails?.step_runs?.length ? (
+                          <div className="space-y-3">
+                            {expandedRunDetails.step_runs.map((step: any, index: number) => (
+                              <div key={step.id} className="rounded-lg border border-gray-100 p-3 bg-gray-50">
+                                <div className="flex items-center justify-between gap-2 mb-1">
+                                  <span className="font-medium text-sm">Node {index + 1} ({step.node_type})</span>
+                                  <span
+                                    className={`text-xs px-2 py-0.5 rounded-full border font-medium ${STATUS_BADGE[step.status] || STATUS_BADGE.pending}`}
+                                  >
+                                    {step.status.charAt(0).toUpperCase() + step.status.slice(1)}
+                                  </span>
+                                </div>
+                                
+                                <p className="text-gray-500 text-xs mb-2">
+                                  Started: {step.started_at ? new Date(step.started_at).toLocaleTimeString('id-ID') : '—'}
+                                  {' • '}
+                                  Duration: {step.duration != null ? `${step.duration}ms` : '—'}
+                                </p>
+                                
+                                {step.error_message && (
+                                  <p className="text-red-600 text-xs mb-2">Error: {step.error_message}</p>
+                                )}
+                                
+                                {step.output && Object.keys(step.output).length > 0 && (
+                                  <div className="mt-2">
+                                    <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Output / Response:</p>
+                                    <pre className="text-xs bg-gray-900 text-gray-100 p-3 rounded-md overflow-x-auto shadow-inner">
+                                      {JSON.stringify(step.output, null, 2)}
+                                    </pre>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500">No detailed steps found for this run.</p>
+                        )}
+                      </div>
+                    )}
+
+                    {!expandedRunId && run.step_runs && run.step_runs.length > 0 && (
                       <div className="mt-3 pt-3 border-t border-gray-100">
                         <div className="flex items-center gap-4 text-xs">
                           <span className="text-gray-600">
