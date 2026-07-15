@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreScheduleRequest;
+use App\Http\Requests\UpdateScheduleRequest;
 use App\Http\Resources\ScheduleResource;
 use App\Models\Schedule;
 use App\Models\Workflow;
@@ -48,17 +50,8 @@ class ScheduleController extends Controller
      * @param Request $request
      * @return ScheduleResource
      */
-    public function store(Request $request): ScheduleResource
+    public function store(StoreScheduleRequest $request): ScheduleResource
     {
-        $request->validate([
-            'workflow_id' => ['required', 'uuid'],
-            'workflow_version_id' => ['nullable', 'uuid'],
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string', 'max:5000'],
-            'cron_expression' => ['required', 'string', 'max:255'],
-            'timezone' => ['nullable', 'string', 'max:255'],
-            'is_active' => ['sometimes', 'boolean'],
-        ]);
 
         // Get workflow
         $workflow = Workflow::findOrFail($request->input('workflow_id'));
@@ -108,15 +101,8 @@ class ScheduleController extends Controller
      * @param Schedule $schedule
      * @return ScheduleResource
      */
-    public function update(Request $request, Schedule $schedule): ScheduleResource
+    public function update(UpdateScheduleRequest $request, Schedule $schedule): ScheduleResource
     {
-        $request->validate([
-            'name' => ['sometimes', 'string', 'max:255'],
-            'description' => ['nullable', 'string', 'max:5000'],
-            'cron_expression' => ['sometimes', 'string', 'max:255'],
-            'timezone' => ['nullable', 'string', 'max:255'],
-            'is_active' => ['sometimes', 'boolean'],
-        ]);
 
         // Validate cron expression if provided
         if ($request->has('cron_expression')) {
