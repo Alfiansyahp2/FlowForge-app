@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
 import {
   ReactFlow, type Node, type Edge, addEdge, type Connection,
   useNodesState, useEdgesState, Controls, Background, MiniMap,
@@ -10,6 +9,7 @@ import '@xyflow/react/dist/style.css';
 import { workflowApi, runsApi } from '../services/api';
 import { usePermissions } from '../hooks/usePermissions';
 import { useModalStore } from '../components/ui/Modal';
+import { useWorkflowRuns } from '../hooks/useWorkflowRuns';
 import { PageLayout } from '../components/layout/PageLayout';
 import { NodeConfigPanel } from '../components/workflow/NodeConfigPanel';
 import type { Workflow, WorkflowRun, StepRun } from '../types';
@@ -85,12 +85,18 @@ export default function WorkflowEditorPage() {
   const [sidePanel, setSidePanel] = useState<'nodes' | 'runs' | 'settings' | 'ai'>('nodes');
   const [aiPrompt, setAiPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [runs, setRuns]           = useState<WorkflowRun[]>([]);
-  const [runsLoading, setRunsLoading] = useState(false);
-  const [runDetails, setRunDetails] = useState<WorkflowRun | null>(null);
-  const [runDetailsLoading, setRunDetailsLoading] = useState(false);
-  const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+
+  const {
+    runs,
+    runsLoading,
+    runDetails,
+    runDetailsLoading,
+    selectedRunId,
+    loadRuns,
+    loadRunDetails,
+    setSelectedRunId
+  } = useWorkflowRuns(workflow?.id, isNew);
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
@@ -164,123 +170,7 @@ export default function WorkflowEditorPage() {
     }
   }, [slug, isNew]);
 
-  // ── Load runs ─────────────────────────────────────────────────────────────
-  const loadRuns = async () => {
-    if (isNew || !workflow?.id) return;
-    setRunsLoading(true);
-    try {
-      const res = await runsApi.list({ workflow_id: workflow.id });
-      setRuns(res.data ?? []);
-    } catch (err) {
-      console.error('Failed to load runs', err);
-    } finally {
-      setRunsLoading(false);
-    }
-  };
 
-  const loadRunDetails = async (runId: string) => {
-    setRunDetailsLoading(true);
-    try {
-      const run = await runsApi.get(runId);
-      setRunDetails(run);
-      setSelectedRunId(runId);
-    } catch (err) {
-      console.error('Failed to load run details', err);
-    } finally {
-      setRunDetailsLoading(false);
-    }
-  };
-
-  // ── WebSockets Real-Time Monitoring ──────────────────────────────────────────
-  useEffect(() => {
-    if (isNew || !workflow?.id) return;
-
-    let ws: WebSocket | null = null;
-    let reconnectTimeout: number;
-
-    const connectWebSocket = async () => {
-      try {
-        const authRaw = localStorage.getItem('auth-storage');
-        let token = '';
-        let tenantId = '';
-        if (authRaw) {
-          const auth = JSON.parse(authRaw);
-          token = auth?.state?.token || '';
-          tenantId = auth?.state?.user?.tenant_id || '';
-        }
-
-        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/config/reverb`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'X-Tenant-ID': tenantId,
-          }
-        });
-        const { key, host, port } = res.data;
-
-        const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-        ws = new WebSocket(`${protocol}://${host}:${port}/app/${key}?protocol=7&client=js&version=4.4.0`);
-
-        ws.onopen = () => {
-          console.log('WebSocket Connected to Reverb');
-          ws?.send(JSON.stringify({
-            event: 'pusher:subscribe',
-            data: { channel: `workflows.${workflow.id}` }
-          }));
-        };
-
-        ws.onmessage = (event) => {
-          try {
-            const parsed = JSON.parse(event.data);
-            if (parsed.event && parsed.data) {
-              const eventData = JSON.parse(parsed.data);
-              
-              if (parsed.event === 'step.started' || parsed.event === 'step.completed' || parsed.event === 'step.failed') {
-                setRunDetails(prev => {
-                  if (!prev || prev.id !== eventData.workflow_run_id) return prev;
-                  const stepRuns = [...(prev.step_runs ?? [])];
-                  const idx = stepRuns.findIndex(s => s.id === eventData.id);
-                  if (idx !== -1) {
-                    stepRuns[idx] = { ...stepRuns[idx], ...eventData };
-                  } else {
-                    stepRuns.push(eventData);
-                  }
-                  return { ...prev, step_runs: stepRuns };
-                });
-                loadRuns();
-              } else if (parsed.event === 'workflow.started' || parsed.event === 'workflow.completed' || parsed.event === 'workflow.failed') {
-                setRunDetails(prev => {
-                  if (!prev || prev.id !== eventData.id) return prev;
-                  return { ...prev, ...eventData };
-                });
-                loadRuns();
-              }
-            }
-          } catch (e) {
-            console.error('Error handling WebSocket message:', e);
-          }
-        };
-
-        ws.onclose = () => {
-          console.log('WebSocket Connection Closed. Reconnecting...');
-          reconnectTimeout = window.setTimeout(connectWebSocket, 3000);
-        };
-
-        ws.onerror = (err) => {
-          console.error('WebSocket Error:', err);
-        };
-      } catch (err) {
-        console.error('Failed to initialize WebSocket:', err);
-        reconnectTimeout = window.setTimeout(connectWebSocket, 5000);
-      }
-    };
-
-    connectWebSocket();
-
-    return () => {
-      if (ws) ws.close();
-      clearTimeout(reconnectTimeout);
-    };
-  }, [workflow?.id, isNew]);
 
   // ── Canvas Node Styling based on step run status ──────────────────────────────
   useEffect(() => {

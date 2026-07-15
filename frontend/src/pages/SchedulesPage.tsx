@@ -12,6 +12,7 @@ import {
   Clock, X, Pencil,
 } from 'lucide-react';
 import { ScheduleFormModal } from '../components/schedules/ScheduleFormModal';
+import { useSchedules } from '../hooks/useSchedules';
 
 
 
@@ -20,29 +21,11 @@ export default function SchedulesPage() {
   const { can } = usePermissions();
   const { confirm, denied, success } = useModalStore();
 
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [workflows, setWorkflows] = useState<Workflow[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { schedules, workflows, isLoading, loadAll, toggleSchedule, triggerSchedule, deleteSchedule } = useSchedules();
   const [showForm, setShowForm]   = useState(false);
   const [editTarget, setEditTarget] = useState<Schedule | null>(null);
 
-  const loadAll = async () => {
-    setIsLoading(true);
-    try {
-      const [schedRes, wfRes] = await Promise.all([
-        scheduleApi.list(),
-        workflowApi.list()
-      ]);
-      setSchedules(schedRes.data || []);
-      setWorkflows(wfRes.data || []);
-    } catch (err) {
-      console.error('Failed to load data:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => { loadAll(); }, []);
+  useEffect(() => { loadAll(); }, [loadAll]);
 
   const handleToggle = (schedule: Schedule) => {
     if (!can('edit schedules')) { denied('edit schedules'); return; }
@@ -53,9 +36,8 @@ export default function SchedulesPage() {
       icon: schedule.is_active ? 'warning' : 'run',
       confirmLabel: schedule.is_active ? 'Pause' : 'Resume',
       onConfirm: async () => {
-        await scheduleApi.toggle(schedule.id);
-        success(`Schedule "${schedule.name}" ${schedule.is_active ? 'paused' : 'resumed'}.`);
-        loadAll();
+        const ok = await toggleSchedule(schedule.id);
+        if (ok) success(`Schedule "${schedule.name}" ${schedule.is_active ? 'paused' : 'resumed'}.`);
       },
     });
   };
@@ -69,9 +51,8 @@ export default function SchedulesPage() {
       icon: 'run',
       confirmLabel: 'Run now',
       onConfirm: async () => {
-        await scheduleApi.trigger(schedule.id);
-        success(`Schedule "${schedule.name}" triggered successfully.`);
-        loadAll();
+        const ok = await triggerSchedule(schedule.id);
+        if (ok) success(`Schedule "${schedule.name}" triggered successfully.`);
       },
     });
   };
@@ -85,9 +66,8 @@ export default function SchedulesPage() {
       icon: 'delete',
       confirmLabel: 'Delete',
       onConfirm: async () => {
-        await scheduleApi.delete(schedule.id);
-        success(`Schedule "${schedule.name}" deleted.`);
-        loadAll();
+        const ok = await deleteSchedule(schedule.id);
+        if (ok) success(`Schedule "${schedule.name}" deleted.`);
       },
     });
   };
