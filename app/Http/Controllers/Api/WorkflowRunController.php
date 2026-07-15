@@ -14,9 +14,9 @@ class WorkflowRunController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $perPage    = $request->input('per_page', 15);
+        $perPage = $request->input('per_page', 15);
         $workflowId = $request->input('workflow_id');
-        $status     = $request->input('status');
+        $status = $request->input('status');
 
         $query = WorkflowRun::with(['workflow:id,name', 'triggeredBy:id,name'])
             ->orderBy('created_at', 'desc');
@@ -32,12 +32,12 @@ class WorkflowRunController extends Controller
         $runs = $query->paginate($perPage);
 
         return response()->json([
-            'data' => $runs->map(fn($r) => $this->format($r)),
+            'data' => $runs->map(fn ($r) => $this->format($r)),
             'meta' => [
                 'current_page' => $runs->currentPage(),
-                'last_page'    => $runs->lastPage(),
-                'per_page'     => $runs->perPage(),
-                'total'        => $runs->total(),
+                'last_page' => $runs->lastPage(),
+                'per_page' => $runs->perPage(),
+                'total' => $runs->total(),
             ],
         ]);
     }
@@ -51,18 +51,18 @@ class WorkflowRunController extends Controller
 
         return response()->json([
             'data' => array_merge($this->format($run), [
-                'step_runs' => $run->stepRuns->map(fn($s) => [
-                    'id'            => $s->id,
-                    'node_id'       => $s->node_id,
-                    'node_type'     => $s->node_type,
-                    'status'        => $s->status,
-                    'started_at'    => $s->started_at?->toISOString(),
-                    'finished_at'   => $s->finished_at?->toISOString(),
-                    'duration'      => $s->duration,
-                    'input'         => $s->input,
-                    'output'        => $s->output,
+                'step_runs' => $run->stepRuns->map(fn ($s) => [
+                    'id' => $s->id,
+                    'node_id' => $s->node_id,
+                    'node_type' => $s->node_type,
+                    'status' => $s->status,
+                    'started_at' => $s->started_at?->toISOString(),
+                    'finished_at' => $s->finished_at?->toISOString(),
+                    'duration' => $s->duration,
+                    'input' => $s->input,
+                    'output' => $s->output,
                     'error_message' => $s->error_message,
-                    'retry_count'   => $s->retry_count,
+                    'retry_count' => $s->retry_count,
                 ]),
             ]),
         ]);
@@ -73,14 +73,14 @@ class WorkflowRunController extends Controller
      */
     public function cancel(WorkflowRun $run): JsonResponse
     {
-        if (!in_array($run->status, ['pending', 'running'])) {
+        if (! in_array($run->status, ['pending', 'running'])) {
             return response()->json([
                 'message' => 'Only pending or running workflow runs can be cancelled.',
             ], 422);
         }
 
         $run->update([
-            'status'      => 'failed',
+            'status' => 'failed',
             'finished_at' => now(),
             'error_message' => 'Cancelled by user',
         ]);
@@ -91,20 +91,20 @@ class WorkflowRunController extends Controller
     private function format(WorkflowRun $run): array
     {
         return [
-            'id'                  => $run->id,
-            'workflow_id'         => $run->workflow_id,
-            'workflow'            => $run->workflow ? ['id' => $run->workflow->id, 'name' => $run->workflow->name] : null,
+            'id' => $run->id,
+            'workflow_id' => $run->workflow_id,
+            'workflow' => $run->workflow ? ['id' => $run->workflow->id, 'name' => $run->workflow->name] : null,
             'workflow_version_id' => $run->workflow_version_id,
-            'status'              => $run->status,
-            'trigger_type'        => $run->trigger_type,
-            'triggered_by'        => $run->triggeredBy?->name,
-            'started_at'          => $run->started_at?->toISOString(),
-            'finished_at'         => $run->finished_at?->toISOString(),
-            'duration'            => $run->duration,
-            'input'               => $run->input,
-            'output'              => $run->output,
-            'error_message'       => $run->error_message,
-            'created_at'          => $run->created_at?->toISOString(),
+            'status' => $run->status,
+            'trigger_type' => $run->trigger_type,
+            'triggered_by' => $run->triggeredBy?->name,
+            'started_at' => $run->started_at?->toISOString(),
+            'finished_at' => $run->finished_at?->toISOString(),
+            'duration' => $run->duration,
+            'input' => $run->input,
+            'output' => $run->output,
+            'error_message' => $run->error_message,
+            'created_at' => $run->created_at?->toISOString(),
         ];
     }
 }

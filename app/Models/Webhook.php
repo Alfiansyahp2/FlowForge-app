@@ -93,6 +93,6 @@ class Webhook extends Model
      */
     public function getFullUrl(): string
     {
-        return config('app.url') . '/api/webhooks/' . $this->token;
+        return config('app.url').'/api/webhooks/'.$this->token;
     }
 }

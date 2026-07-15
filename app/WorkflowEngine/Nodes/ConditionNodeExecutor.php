@@ -26,7 +26,7 @@ class ConditionNodeExecutor implements ExecutableNodeInterface
         $result = $this->evaluator->evaluate($expression, $context['variables'] ?? []);
 
         return [
-            'condition_met' => (bool)$result,
+            'condition_met' => (bool) $result,
             'expression' => $expression,
         ];
     }

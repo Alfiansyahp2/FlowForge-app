@@ -74,7 +74,7 @@ class WorkflowVersion extends Model
      */
     public function scopeOrderByVersion($query, $direction = 'desc')
     {
-        return $query->orderByRaw("STRING_TO_ARRAY(version, '.')::int[] " . $direction);
+        return $query->orderByRaw("STRING_TO_ARRAY(version, '.')::int[] ".$direction);
     }
 
     /**

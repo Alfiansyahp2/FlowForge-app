@@ -7,11 +7,9 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -33,14 +31,14 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response([
                 'message' => 'Validation failed',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
         // Validate that either tenant_id or tenant_name is provided
-        if (!$request->has('tenant_id') && !$request->has('tenant_name')) {
+        if (! $request->has('tenant_id') && ! $request->has('tenant_name')) {
             return response([
-                'message' => 'Either tenant_id or tenant_name is required'
+                'message' => 'Either tenant_id or tenant_name is required',
             ], 400);
         }
 
@@ -50,9 +48,9 @@ class AuthController extends Controller
         if ($request->has('tenant_id')) {
             // Use existing tenant
             $tenant = Tenant::find($request->tenant_id);
-            if (!$tenant || !$tenant->is_active) {
+            if (! $tenant || ! $tenant->is_active) {
                 return response([
-                    'message' => 'Invalid or inactive tenant'
+                    'message' => 'Invalid or inactive tenant',
                 ], 400);
             }
         } elseif ($request->has('tenant_name')) {
@@ -64,9 +62,9 @@ class AuthController extends Controller
             if ($existingTenant) {
                 // Tenant exists, use it
                 $tenant = $existingTenant;
-                if (!$tenant->is_active) {
+                if (! $tenant->is_active) {
                     return response([
-                        'message' => 'Tenant exists but is inactive'
+                        'message' => 'Tenant exists but is inactive',
                     ], 400);
                 }
             } else {
@@ -87,7 +85,7 @@ class AuthController extends Controller
 
         if ($existingUser) {
             return response([
-                'message' => 'Email already exists in this tenant'
+                'message' => 'Email already exists in this tenant',
             ], 409);
         }
 
@@ -136,7 +134,7 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response([
                 'message' => 'Validation failed',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -149,25 +147,25 @@ class AuthController extends Controller
 
         // Find user by email and tenant
         $user = User::where('email', $request->email)
-            ->when($request->has('tenant_id'), fn($q) => $q->where('tenant_id', $request->tenant_id))
+            ->when($request->has('tenant_id'), fn ($q) => $q->where('tenant_id', $request->tenant_id))
             ->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (! $user || ! Hash::check($request->password, $user->password)) {
             return response([
-                'message' => 'Invalid credentials'
+                'message' => 'Invalid credentials',
             ], 401);
         }
 
-        if (!$user->is_active) {
+        if (! $user->is_active) {
             return response([
-                'message' => 'User account is inactive'
+                'message' => 'User account is inactive',
             ], 403);
         }
 
         // Check tenant is active
-        if (!$user->tenant || !$user->tenant->is_active) {
+        if (! $user->tenant || ! $user->tenant->is_active) {
             return response([
-                'message' => 'Tenant is inactive'
+                'message' => 'Tenant is inactive',
             ], 403);
         }
 
@@ -200,7 +198,7 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return response([
-            'message' => 'Logged out successfully'
+            'message' => 'Logged out successfully',
         ]);
     }
 

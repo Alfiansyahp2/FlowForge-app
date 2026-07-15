@@ -1,12 +1,14 @@
 <?php
 
+use App\Http\Controllers\Api\AIWorkflowController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\WebhookController;
 use App\Http\Controllers\Api\WorkflowController;
 use App\Http\Controllers\Api\WorkflowRunController;
 use App\Http\Controllers\Api\WorkflowVersionController;
-use App\Http\Controllers\Api\WebhookController;
-use App\Http\Controllers\Api\ScheduleController;
+use App\Http\Middleware\IdentifyTenant;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -26,7 +28,7 @@ Route::middleware('throttle:auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 });
 // Protected authentication routes
-Route::middleware(['auth:sanctum', \App\Http\Middleware\IdentifyTenant::class])->group(function () {
+Route::middleware(['auth:sanctum', IdentifyTenant::class])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
 
@@ -102,7 +104,7 @@ Route::middleware(['auth:sanctum', \App\Http\Middleware\IdentifyTenant::class])-
     });
 
     // AI Workflow routes
-    Route::post('/workflows/ai/generate', [\App\Http\Controllers\Api\AIWorkflowController::class, 'generate'])->middleware('can:create workflows');
+    Route::post('/workflows/ai/generate', [AIWorkflowController::class, 'generate'])->middleware('can:create workflows');
 });
 
 // Public webhook routes (for external triggers)

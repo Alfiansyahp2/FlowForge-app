@@ -2,9 +2,8 @@
 
 namespace App\Broadcasting;
 
-use App\Models\User;
 use App\Models\Tenant;
-use Illuminate\Support\Facades\Request;
+use App\Models\User;
 
 class TenantChannel
 {

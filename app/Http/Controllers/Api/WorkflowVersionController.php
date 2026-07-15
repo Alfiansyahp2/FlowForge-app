@@ -16,9 +16,6 @@ class WorkflowVersionController extends Controller
 {
     /**
      * Display a listing of all workflow versions.
-     *
-     * @param Workflow $workflow
-     * @return AnonymousResourceCollection
      */
     public function index(Workflow $workflow): AnonymousResourceCollection
     {
@@ -34,10 +31,6 @@ class WorkflowVersionController extends Controller
 
     /**
      * Store a newly created workflow version in storage.
-     *
-     * @param Request $request
-     * @param Workflow $workflow
-     * @return WorkflowVersionResource
      */
     public function store(Request $request, Workflow $workflow): WorkflowVersionResource
     {
@@ -67,10 +60,6 @@ class WorkflowVersionController extends Controller
 
     /**
      * Display the specified workflow version.
-     *
-     * @param Workflow $workflow
-     * @param WorkflowVersion $version
-     * @return WorkflowVersionResource
      */
     public function show(Workflow $workflow, WorkflowVersion $version): WorkflowVersionResource
     {
@@ -87,11 +76,6 @@ class WorkflowVersionController extends Controller
 
     /**
      * Rollback workflow to a specific version.
-     *
-     * @param Request $request
-     * @param Workflow $workflow
-     * @param WorkflowVersion $version
-     * @return WorkflowResource
      */
     public function rollback(Request $request, Workflow $workflow, WorkflowVersion $version): WorkflowResource
     {
@@ -120,11 +104,6 @@ class WorkflowVersionController extends Controller
 
     /**
      * Activate a specific version.
-     *
-     * @param Request $request
-     * @param Workflow $workflow
-     * @param WorkflowVersion $version
-     * @return WorkflowResource
      */
     public function activate(Request $request, Workflow $workflow, WorkflowVersion $version): WorkflowResource
     {
@@ -141,10 +120,6 @@ class WorkflowVersionController extends Controller
 
     /**
      * Compare two versions.
-     *
-     * @param Workflow $workflow
-     * @param Request $request
-     * @return JsonResponse
      */
     public function compare(Workflow $workflow, Request $request): JsonResponse
     {
@@ -191,11 +166,11 @@ class WorkflowVersionController extends Controller
     private function calculateEdgesDiff(?array $from, ?array $to, string $type): array
     {
         $fromEdges = collect($from['edges'] ?? [])->map(function ($edge) {
-            return $edge['source'] . '-' . $edge['target'];
+            return $edge['source'].'-'.$edge['target'];
         })->toArray();
 
         $toEdges = collect($to['edges'] ?? [])->map(function ($edge) {
-            return $edge['source'] . '-' . $edge['target'];
+            return $edge['source'].'-'.$edge['target'];
         })->toArray();
 
         if ($type === 'added') {

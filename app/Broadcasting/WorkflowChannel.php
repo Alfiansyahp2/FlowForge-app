@@ -4,7 +4,6 @@ namespace App\Broadcasting;
 
 use App\Models\User;
 use App\Models\Workflow;
-use Illuminate\Support\Facades\Request;
 
 class WorkflowChannel
 {
@@ -18,7 +17,7 @@ class WorkflowChannel
             ->where('tenant_id', $user->tenant_id)
             ->first();
 
-        if (!$workflow) {
+        if (! $workflow) {
             return false;
         }
 

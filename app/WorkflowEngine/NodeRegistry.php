@@ -14,8 +14,6 @@ class NodeRegistry
 
     /**
      * Register a node executor.
-     *
-     * @param ExecutableNodeInterface $executor
      */
     public function register(ExecutableNodeInterface $executor): void
     {
@@ -25,13 +23,11 @@ class NodeRegistry
     /**
      * Get an executor by node type.
      *
-     * @param string $type
-     * @return ExecutableNodeInterface
      * @throws Exception
      */
     public function getExecutor(string $type): ExecutableNodeInterface
     {
-        if (!isset($this->executors[$type])) {
+        if (! isset($this->executors[$type])) {
             throw new Exception("Unsupported node type: {$type}");
         }
 

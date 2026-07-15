@@ -8,10 +8,6 @@ class RetryManager
      * Calculate retry delay with exponential backoff.
      *
      * Formula: base_delay * 2^(retry_count - 1)
-     *
-     * @param int $retryCount
-     * @param int $baseDelay
-     * @return int
      */
     public function calculateDelay(int $retryCount, int $baseDelay): int
     {
@@ -32,10 +28,6 @@ class RetryManager
 
     /**
      * Check if step should be retried.
-     *
-     * @param int $retryCount
-     * @param int $maxRetries
-     * @return bool
      */
     public function shouldRetry(int $retryCount, int $maxRetries): bool
     {
@@ -44,10 +36,6 @@ class RetryManager
 
     /**
      * Calculate total retry duration.
-     *
-     * @param int $maxRetries
-     * @param int $baseDelay
-     * @return int
      */
     public function calculateTotalDuration(int $maxRetries, int $baseDelay): int
     {
@@ -62,11 +50,6 @@ class RetryManager
 
     /**
      * Get retry strategy info.
-     *
-     * @param int $retryCount
-     * @param int $maxRetries
-     * @param int $baseDelay
-     * @return array
      */
     public function getRetryInfo(int $retryCount, int $maxRetries, int $baseDelay): array
     {

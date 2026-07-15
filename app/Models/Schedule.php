@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Cron\CronExpression;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -84,11 +86,12 @@ class Schedule extends Model
     /**
      * Calculate next run time based on cron expression.
      */
-    public function calculateNextRun(): \Carbon\Carbon
+    public function calculateNextRun(): Carbon
     {
         try {
-            $cron = new \Cron\CronExpression($this->cron_expression);
-            return \Carbon\Carbon::instance($cron->getNextRunDate('now', 0, false, $this->timezone ?? 'UTC'));
+            $cron = new CronExpression($this->cron_expression);
+
+            return Carbon::instance($cron->getNextRunDate('now', 0, false, $this->timezone ?? 'UTC'));
         } catch (\Exception $e) {
             // Fallback if cron is invalid
             return now()->addMinute();

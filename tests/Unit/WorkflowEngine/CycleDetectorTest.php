@@ -10,7 +10,7 @@ class CycleDetectorTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->detector = new CycleDetector();
+        $this->detector = new CycleDetector;
     }
 
     /** @test */
@@ -177,7 +177,7 @@ class CycleDetectorTest extends TestCase
             ],
         ];
 
-        $this->expectException(\Exception::class);
+        $this->expectException(Exception::class);
         $this->expectExceptionMessage('Workflow contains circular dependencies');
 
         $this->detector->validate($definition);

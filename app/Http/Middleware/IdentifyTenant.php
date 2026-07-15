@@ -19,23 +19,23 @@ class IdentifyTenant
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
         $tenant = $this->tenantService->identifyFromRequest($request);
 
-        if (!$tenant) {
+        if (! $tenant) {
             return response()->json([
                 'message' => 'Tenant not found or not specified',
-                'error' => 'tenant_not_found'
+                'error' => 'tenant_not_found',
             ], 400);
         }
 
-        if (!$tenant->is_active) {
+        if (! $tenant->is_active) {
             return response()->json([
                 'message' => 'Tenant is inactive',
-                'error' => 'tenant_inactive'
+                'error' => 'tenant_inactive',
             ], 403);
         }
 

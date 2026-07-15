@@ -3,7 +3,7 @@
 use App\Models\Tenant;
 use App\Services\TenantService;
 
-if (!function_exists('tenant')) {
+if (! function_exists('tenant')) {
     /**
      * Get the current tenant service or tenant instance
      *
@@ -21,7 +21,7 @@ if (!function_exists('tenant')) {
     }
 }
 
-if (!function_exists('setTenant')) {
+if (! function_exists('setTenant')) {
     /**
      * Set the current tenant
      */
@@ -31,7 +31,7 @@ if (!function_exists('setTenant')) {
     }
 }
 
-if (!function_exists('flushTenant')) {
+if (! function_exists('flushTenant')) {
     /**
      * Clear the current tenant
      */
@@ -41,7 +41,7 @@ if (!function_exists('flushTenant')) {
     }
 }
 
-if (!function_exists('tenantId')) {
+if (! function_exists('tenantId')) {
     /**
      * Get current tenant ID
      */
@@ -51,7 +51,7 @@ if (!function_exists('tenantId')) {
     }
 }
 
-if (!function_exists('hasTenant')) {
+if (! function_exists('hasTenant')) {
     /**
      * Check if tenant is set
      */

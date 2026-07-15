@@ -5,11 +5,11 @@ namespace App\WorkflowEngine\Nodes;
 use App\WorkflowEngine\Contracts\ExecutableNodeInterface;
 use App\WorkflowEngine\Traits\VariableReplacerTrait;
 use Illuminate\Support\Facades\Http;
-use Exception;
 
 class HttpNodeExecutor implements ExecutableNodeInterface
 {
     use VariableReplacerTrait;
+
     public function getType(): string
     {
         return 'http';
@@ -35,6 +35,4 @@ class HttpNodeExecutor implements ExecutableNodeInterface
             'body' => $response->body(),
         ];
     }
-
-
 }

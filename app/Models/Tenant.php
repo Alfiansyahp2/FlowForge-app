@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Tenant extends Model
@@ -36,7 +37,7 @@ class Tenant extends Model
     /**
      * Get all users for the tenant.
      */
-    public function users(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function users(): HasMany
     {
         return $this->hasMany(User::class);
     }
@@ -44,7 +45,7 @@ class Tenant extends Model
     /**
      * Get all workflows for the tenant.
      */
-    public function workflows(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function workflows(): HasMany
     {
         return $this->hasMany(Workflow::class);
     }
@@ -52,7 +53,7 @@ class Tenant extends Model
     /**
      * Get all webhooks for the tenant.
      */
-    public function webhooks(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function webhooks(): HasMany
     {
         return $this->hasMany(Webhook::class);
     }
@@ -60,7 +61,7 @@ class Tenant extends Model
     /**
      * Get all schedules for the tenant.
      */
-    public function schedules(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function schedules(): HasMany
     {
         return $this->hasMany(Schedule::class);
     }

@@ -15,7 +15,7 @@ class DelayNodeExecutor implements ExecutableNodeInterface
     {
         $seconds = $node['data']['seconds'] ?? 0;
         if ($seconds > 0) {
-            sleep(min((int)$seconds, 60)); // Max 60 seconds delay for safety
+            sleep(min((int) $seconds, 60)); // Max 60 seconds delay for safety
         }
 
         return [

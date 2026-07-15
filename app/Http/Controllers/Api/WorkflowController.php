@@ -17,14 +17,13 @@ class WorkflowController extends Controller
 {
     private WorkflowExecutor $executor;
 
-    public function __construct(WorkflowExecutor $executor) {
+    public function __construct(WorkflowExecutor $executor)
+    {
         $this->executor = $executor;
     }
+
     /**
      * Display a listing of workflows.
-     *
-     * @param Request $request
-     * @return AnonymousResourceCollection
      */
     public function index(Request $request): AnonymousResourceCollection
     {
@@ -59,9 +58,6 @@ class WorkflowController extends Controller
 
     /**
      * Store a newly created workflow in storage.
-     *
-     * @param StoreWorkflowRequest $request
-     * @return WorkflowResource
      */
     public function store(StoreWorkflowRequest $request): WorkflowResource
     {
@@ -92,9 +88,6 @@ class WorkflowController extends Controller
 
     /**
      * Display the specified workflow.
-     *
-     * @param Workflow $workflow
-     * @return WorkflowResource|JsonResponse
      */
     public function show(Workflow $workflow): WorkflowResource|JsonResponse
     {
@@ -105,10 +98,6 @@ class WorkflowController extends Controller
 
     /**
      * Update the specified workflow in storage.
-     *
-     * @param UpdateWorkflowRequest $request
-     * @param Workflow $workflow
-     * @return WorkflowResource
      */
     public function update(UpdateWorkflowRequest $request, Workflow $workflow): WorkflowResource
     {
@@ -139,9 +128,6 @@ class WorkflowController extends Controller
 
     /**
      * Remove the specified workflow from storage.
-     *
-     * @param Workflow $workflow
-     * @return JsonResponse
      */
     public function destroy(Workflow $workflow): JsonResponse
     {
@@ -154,9 +140,6 @@ class WorkflowController extends Controller
 
     /**
      * Archive the specified workflow.
-     *
-     * @param Workflow $workflow
-     * @return WorkflowResource
      */
     public function archive(Workflow $workflow): WorkflowResource
     {
@@ -167,13 +150,10 @@ class WorkflowController extends Controller
 
     /**
      * Activate the specified workflow.
-     *
-     * @param Workflow $workflow
-     * @return WorkflowResource
      */
     public function activate(Workflow $workflow): WorkflowResource
     {
-        if (!$workflow->currentVersion) {
+        if (! $workflow->currentVersion) {
             abort(400, 'Cannot activate workflow without a version');
         }
 
@@ -184,14 +164,10 @@ class WorkflowController extends Controller
 
     /**
      * Execute a workflow manually.
-     *
-     * @param Request $request
-     * @param Workflow $workflow
-     * @return JsonResponse
      */
     public function run(Request $request, Workflow $workflow): JsonResponse
     {
-        if (!$workflow->currentVersion) {
+        if (! $workflow->currentVersion) {
             return response()->json([
                 'message' => 'Workflow has no version to run. Please save a definition first.',
             ], 400);
@@ -207,9 +183,9 @@ class WorkflowController extends Controller
             $input = array_merge(
                 $request->input('input', []),
                 [
-                    'trigger_type'   => 'manual',
-                    'triggered_by'   => $request->user()?->id,
-                    'triggered_at'   => now()->toDateTimeString(),
+                    'trigger_type' => 'manual',
+                    'triggered_by' => $request->user()?->id,
+                    'triggered_at' => now()->toDateTimeString(),
                 ]
             );
 
@@ -221,24 +197,20 @@ class WorkflowController extends Controller
             );
 
             return response()->json([
-                'message'         => 'Workflow started successfully',
+                'message' => 'Workflow started successfully',
                 'workflow_run_id' => $workflowRun->id,
-                'status'          => $workflowRun->status,
-                'started_at'      => $workflowRun->started_at,
+                'status' => $workflowRun->status,
+                'started_at' => $workflowRun->started_at,
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Workflow execution failed: ' . $e->getMessage(),
+                'message' => 'Workflow execution failed: '.$e->getMessage(),
             ], 500);
         }
     }
 
     /**
      * Duplicate the specified workflow.
-     *
-     * @param Workflow $workflow
-     * @param Request $request
-     * @return WorkflowResource
      */
     public function duplicate(Workflow $workflow, Request $request): WorkflowResource
     {

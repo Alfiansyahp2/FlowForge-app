@@ -16,14 +16,13 @@ class WebhookController extends Controller
 {
     private WorkflowExecutor $executor;
 
-    public function __construct(WorkflowExecutor $executor) {
+    public function __construct(WorkflowExecutor $executor)
+    {
         $this->executor = $executor;
     }
 
     /**
      * Display a listing of webhooks.
-     *
-     * @return AnonymousResourceCollection
      */
     public function index(): AnonymousResourceCollection
     {
@@ -34,9 +33,6 @@ class WebhookController extends Controller
 
     /**
      * Store a newly created webhook in storage.
-     *
-     * @param Request $request
-     * @return WebhookResource
      */
     public function store(Request $request): WebhookResource
     {
@@ -67,23 +63,16 @@ class WebhookController extends Controller
 
     /**
      * Display the specified webhook.
-     *
-     * @param Webhook $webhook
-     * @return WebhookResource
      */
     public function show(Webhook $webhook): WebhookResource
     {
         $webhook->load('workflow');
 
-        return new WebhookResource($webhook);
+        return (new WebhookResource($webhook))->response()->setStatusCode(201);
     }
 
     /**
      * Update the specified webhook in storage.
-     *
-     * @param Request $request
-     * @param Webhook $webhook
-     * @return WebhookResource
      */
     public function update(Request $request, Webhook $webhook): WebhookResource
     {
@@ -100,9 +89,6 @@ class WebhookController extends Controller
 
     /**
      * Remove the specified webhook from storage.
-     *
-     * @param Webhook $webhook
-     * @return JsonResponse
      */
     public function destroy(Webhook $webhook): JsonResponse
     {
@@ -115,10 +101,6 @@ class WebhookController extends Controller
 
     /**
      * Handle incoming webhook trigger.
-     *
-     * @param string $token
-     * @param Request $request
-     * @return JsonResponse
      */
     public function handleWebhook(string $token, Request $request): JsonResponse
     {
@@ -127,7 +109,7 @@ class WebhookController extends Controller
             ->where('is_active', true)
             ->first();
 
-        if (!$webhook) {
+        if (! $webhook) {
             return response()->json([
                 'error' => 'Invalid webhook token',
             ], 404);
@@ -136,7 +118,7 @@ class WebhookController extends Controller
         // Get workflow and current version
         $workflow = Workflow::with('currentVersion')->find($webhook->workflow_id);
 
-        if (!$workflow || !$workflow->currentVersion) {
+        if (! $workflow || ! $workflow->currentVersion) {
             return response()->json([
                 'error' => 'Workflow not found or has no active version',
             ], 404);
@@ -171,9 +153,6 @@ class WebhookController extends Controller
 
     /**
      * Regenerate webhook token.
-     *
-     * @param Webhook $webhook
-     * @return WebhookResource
      */
     public function regenerateToken(Webhook $webhook): WebhookResource
     {
@@ -186,8 +165,6 @@ class WebhookController extends Controller
 
     /**
      * Generate unique webhook token.
-     *
-     * @return string
      */
     private function generateUniqueToken(): string
     {
@@ -200,13 +177,10 @@ class WebhookController extends Controller
 
     /**
      * Get webhook URL.
-     *
-     * @param Webhook $webhook
-     * @return JsonResponse
      */
     public function getUrl(Webhook $webhook): JsonResponse
     {
-        $url = config('app.url') . '/api/webhooks/' . $webhook->token;
+        $url = config('app.url').'/api/webhooks/'.$webhook->token;
 
         return response()->json([
             'url' => $url,

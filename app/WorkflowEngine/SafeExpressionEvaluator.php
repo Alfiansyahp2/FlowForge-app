@@ -18,9 +18,8 @@ class SafeExpressionEvaluator
      * Supported operators: ==, !=, >, <, >=, <=, &&, ||, !
      * Supported functions: isset(), empty(), is_null()
      *
-     * @param string $expression
-     * @param array $variables
      * @return mixed
+     *
      * @throws Exception
      */
     public function evaluate(string $expression, array $variables = [])
@@ -37,17 +36,13 @@ class SafeExpressionEvaluator
 
     /**
      * Replace variables in expression with their values.
-     *
-     * @param string $expression
-     * @param array $variables
-     * @return string
      */
     private function replaceVariables(string $expression, array $variables): string
     {
         foreach ($variables as $key => $value) {
             // Support both {key} and $key formats
-            $expression = str_replace('{' . $key . '}', $this->valueToString($value), $expression);
-            $expression = str_replace('$' . $key, $this->valueToString($value), $expression);
+            $expression = str_replace('{'.$key.'}', $this->valueToString($value), $expression);
+            $expression = str_replace('$'.$key, $this->valueToString($value), $expression);
         }
 
         return $expression;
@@ -56,8 +51,7 @@ class SafeExpressionEvaluator
     /**
      * Convert value to string representation.
      *
-     * @param mixed $value
-     * @return string
+     * @param  mixed  $value
      */
     private function valueToString($value): string
     {
@@ -70,7 +64,7 @@ class SafeExpressionEvaluator
         }
 
         if (is_string($value)) {
-            return '"' . addslashes($value) . '"';
+            return '"'.addslashes($value).'"';
         }
 
         if (is_numeric($value)) {
@@ -87,8 +81,6 @@ class SafeExpressionEvaluator
     /**
      * Tokenize expression into tokens.
      *
-     * @param string $expression
-     * @return array
      * @throws Exception
      */
     private function tokenize(string $expression): array
@@ -112,7 +104,7 @@ class SafeExpressionEvaluator
         )/x';
 
         preg_match_all($pattern, $expression, $matches);
-        $tokens = array_filter($matches[0], fn($token) => trim($token) !== '');
+        $tokens = array_filter($matches[0], fn ($token) => trim($token) !== '');
 
         return array_values($tokens);
     }
@@ -120,9 +112,8 @@ class SafeExpressionEvaluator
     /**
      * Parse expression tokens and evaluate.
      *
-     * @param array $tokens
-     * @param int $precedence
      * @return mixed
+     *
      * @throws Exception
      */
     private function parseExpression(array &$tokens, int $precedence = 0)
@@ -135,7 +126,7 @@ class SafeExpressionEvaluator
         $left = $this->parsePrimary($tokens);
 
         // Process operators with proper precedence
-        while (!empty($tokens)) {
+        while (! empty($tokens)) {
             $operator = $tokens[0];
 
             if ($operator === ')') {
@@ -163,8 +154,8 @@ class SafeExpressionEvaluator
     /**
      * Parse primary expression (literals, variables, parenthesized expressions).
      *
-     * @param array $tokens
      * @return mixed
+     *
      * @throws Exception
      */
     private function parsePrimary(array &$tokens)
@@ -189,13 +180,20 @@ class SafeExpressionEvaluator
         // Handle NOT operator
         if ($token === '!') {
             $operand = $this->parsePrimary($tokens);
-            return !$this->toBoolean($operand);
+
+            return ! $this->toBoolean($operand);
         }
 
         // Handle literals
-        if ($token === 'true') return true;
-        if ($token === 'false') return false;
-        if ($token === 'null') return null;
+        if ($token === 'true') {
+            return true;
+        }
+        if ($token === 'false') {
+            return false;
+        }
+        if ($token === 'null') {
+            return null;
+        }
 
         // Handle strings
         if (str_starts_with($token, '"') && str_ends_with($token, '"')) {
@@ -213,6 +211,7 @@ class SafeExpressionEvaluator
                 throw new Exception("Expected '(' after function {$token}");
             }
             array_shift($tokens); // remove '('
+
             return $this->evaluateFunction($token, $tokens);
         }
 
@@ -222,9 +221,8 @@ class SafeExpressionEvaluator
     /**
      * Evaluate built-in functions.
      *
-     * @param string $function
-     * @param array $tokens
      * @return mixed
+     *
      * @throws Exception
      */
     private function evaluateFunction(string $function, array &$tokens)
@@ -249,9 +247,6 @@ class SafeExpressionEvaluator
 
     /**
      * Get operator precedence.
-     *
-     * @param string $operator
-     * @return int
      */
     private function getOperatorPrecedence(string $operator): int
     {
@@ -270,10 +265,10 @@ class SafeExpressionEvaluator
     /**
      * Evaluate operation.
      *
-     * @param mixed $left
-     * @param string $operator
-     * @param mixed $right
+     * @param  mixed  $left
+     * @param  mixed  $right
      * @return mixed
+     *
      * @throws Exception
      */
     private function evaluateOperation($left, string $operator, $right)
@@ -311,8 +306,7 @@ class SafeExpressionEvaluator
     /**
      * Convert value to boolean.
      *
-     * @param mixed $value
-     * @return bool
+     * @param  mixed  $value
      */
     private function toBoolean($value): bool
     {
@@ -328,6 +322,6 @@ class SafeExpressionEvaluator
             return strtolower($value) === 'true' || $value !== '';
         }
 
-        return !empty($value);
+        return ! empty($value);
     }
 }

@@ -2,11 +2,12 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Webhook;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\Webhook
+ * @mixin Webhook
  */
 class WebhookResource extends JsonResource
 {
@@ -31,7 +32,7 @@ class WebhookResource extends JsonResource
                     'name' => $this->workflow->name,
                 ];
             }),
-            'url' => config('app.url') . '/api/webhooks/' . $this->token,
+            'url' => config('app.url').'/api/webhooks/'.$this->token,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

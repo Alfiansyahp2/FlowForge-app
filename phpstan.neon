@@ -1,0 +1,21 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+
+    paths:
+        - app/
+
+    # Level 9 is the highest level
+    level: 5
+
+    ignoreErrors:
+        - '#Unsafe usage of new static\(\).#'
+        - '#Access to an undefined property Illuminate\\Database\\Eloquent\\Model::\$[a-zA-Z0-9_]+.#'
+        - '#is not covariant with PHPDoc type list<string> of overridden property#'
+        - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::[a-zA-Z0-9_]+\(\)#'
+        - '#expects int, float given#'
+        - '#expects App\\Models\\WorkflowRun, Illuminate\\Database\\Eloquent\\Model\|null given#'
+
+    excludePaths:
+        - ./*/*/FileToBeExcluded.php

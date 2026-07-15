@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class Workflow extends Model
 {
@@ -38,16 +39,17 @@ class Workflow extends Model
     public function generateUniqueSlug(): void
     {
         if (empty($this->name)) {
-            $this->slug = \Illuminate\Support\Str::slug('workflow-' . \Illuminate\Support\Str::random(6));
+            $this->slug = Str::slug('workflow-'.Str::random(6));
+
             return;
         }
 
-        $baseSlug = \Illuminate\Support\Str::slug($this->name);
+        $baseSlug = Str::slug($this->name);
         $slug = $baseSlug;
         $counter = 1;
 
         while (static::withoutGlobalScopes()->where('tenant_id', $this->tenant_id)->where('slug', $slug)->where('id', '!=', $this->id)->exists()) {
-            $slug = $baseSlug . '-' . $counter;
+            $slug = $baseSlug.'-'.$counter;
             $counter++;
         }
 

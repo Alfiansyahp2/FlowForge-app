@@ -25,7 +25,7 @@ class WorkflowCompleted implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new \Illuminate\Broadcasting\Channel('workflows.' . $this->workflowRun->workflow_id),
+            new Channel('workflows.'.$this->workflowRun->workflow_id),
         ];
     }
 

@@ -1,7 +1,7 @@
 <?php
 
-use App\WorkflowEngine\WorkflowValidator;
 use App\WorkflowEngine\CycleDetector;
+use App\WorkflowEngine\WorkflowValidator;
 use Tests\TestCase;
 
 class WorkflowValidatorTest extends TestCase
@@ -11,7 +11,7 @@ class WorkflowValidatorTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $cycleDetector = new CycleDetector();
+        $cycleDetector = new CycleDetector;
         $this->validator = new WorkflowValidator($cycleDetector);
     }
 
@@ -98,7 +98,7 @@ class WorkflowValidatorTest extends TestCase
         $errors = $this->validator->validate($definition);
 
         $this->assertNotEmpty($errors);
-        $this->assertStringContainsString("missing required field: type", $errors[0]);
+        $this->assertStringContainsString('missing required field: type', $errors[0]);
     }
 
     /** @test */
@@ -131,7 +131,7 @@ class WorkflowValidatorTest extends TestCase
         $errors = $this->validator->validate($definition);
 
         $this->assertNotEmpty($errors);
-        $this->assertNotEmpty(array_filter($errors, fn($e) => str_contains($e, 'Duplicate node ID')));
+        $this->assertNotEmpty(array_filter($errors, fn ($e) => str_contains($e, 'Duplicate node ID')));
     }
 
     /** @test */
@@ -326,7 +326,7 @@ class WorkflowValidatorTest extends TestCase
             'edges' => [],
         ];
 
-        $this->expectException(\Exception::class);
+        $this->expectException(Exception::class);
         $this->expectExceptionMessage('Workflow validation failed');
 
         $this->validator->validateOrFail($definition);

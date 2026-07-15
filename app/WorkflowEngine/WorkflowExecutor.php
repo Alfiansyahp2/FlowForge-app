@@ -2,27 +2,27 @@
 
 namespace App\WorkflowEngine;
 
-use App\Events\StepCompleted;
 use App\Events\StepFailed;
-use App\Events\StepStarted;
 use App\Events\WorkflowCompleted;
 use App\Events\WorkflowFailed;
 use App\Events\WorkflowStarted;
-use App\Models\WorkflowRun;
-use App\Models\StepRun;
-use App\Models\WorkflowVersion;
-use App\WorkflowEngine\SafeExpressionEvaluator;
-use Exception;
+use App\Jobs\ExecuteStepJob;
 use App\Jobs\RetryStepJob;
+use App\Models\StepRun;
+use App\Models\WorkflowRun;
+use App\Models\WorkflowVersion;
+use Exception;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class WorkflowExecutor
 {
     private WorkflowValidator $validator;
+
     private TopologicalSorter $sorter;
+
     private RetryManager $retryManager;
+
     private NodeRegistry $nodeRegistry;
 
     public function __construct(
@@ -40,11 +40,9 @@ class WorkflowExecutor
     /**
      * Execute a workflow.
      *
-     * @param WorkflowVersion $version
-     * @param array $input
-     * @param string $triggerType  manual | webhook | cron
-     * @param string|null $triggeredBy  User ID (for manual runs)
-     * @return WorkflowRun
+     * @param  string  $triggerType  manual | webhook | cron
+     * @param  string|null  $triggeredBy  User ID (for manual runs)
+     *
      * @throws Exception
      */
     public function execute(
@@ -52,8 +50,7 @@ class WorkflowExecutor
         array $input = [],
         string $triggerType = 'manual',
         ?string $triggeredBy = null
-    ): WorkflowRun
-    {
+    ): WorkflowRun {
         $definition = $version->definition;
 
         // Validate workflow
@@ -64,16 +61,16 @@ class WorkflowExecutor
 
         // Create workflow run
         $workflowRun = WorkflowRun::create([
-            'tenant_id'           => $version->workflow->tenant_id,
-            'workflow_id'         => $version->workflow->id,
+            'tenant_id' => $version->workflow->tenant_id,
+            'workflow_id' => $version->workflow->id,
             'workflow_version_id' => $version->id,
-            'trigger_type'        => $triggerType,
-            'triggered_by'        => $triggeredBy,
-            'status'              => 'running',
-            'input'               => $input,
-            'started_at'          => $now,
-            'timeout_seconds'     => $timeoutSeconds,
-            'timeout_at'          => $now->copy()->addSeconds($timeoutSeconds),
+            'trigger_type' => $triggerType,
+            'triggered_by' => $triggeredBy,
+            'status' => 'running',
+            'input' => $input,
+            'started_at' => $now,
+            'timeout_seconds' => $timeoutSeconds,
+            'timeout_at' => $now->copy()->addSeconds($timeoutSeconds),
         ]);
 
         // Broadcast workflow started event
@@ -111,6 +108,7 @@ class WorkflowExecutor
             ]);
 
             broadcast(new WorkflowCompleted($workflowRun));
+
             return;
         }
 
@@ -118,7 +116,7 @@ class WorkflowExecutor
 
         foreach ($batch['nodes'] as $nodePosition => $nodeId) {
             $node = $this->findNode($definition, $nodeId);
-            if (!$node) {
+            if (! $node) {
                 continue;
             }
 
@@ -134,7 +132,7 @@ class WorkflowExecutor
             );
 
             // Dispatch as background job
-            \App\Jobs\ExecuteStepJob::dispatch($stepRun);
+            ExecuteStepJob::dispatch($stepRun);
         }
     }
 
@@ -156,7 +154,7 @@ class WorkflowExecutor
             $definition = $run->version->definition;
             $executionBatches = $this->sorter->getExecutionBatches($definition);
 
-            if (!isset($executionBatches[$batchIndex])) {
+            if (! isset($executionBatches[$batchIndex])) {
                 return;
             }
 
@@ -168,14 +166,14 @@ class WorkflowExecutor
                 ->where('status', '!=', 'completed')
                 ->exists();
 
-            if (!$unfinished) {
+            if (! $unfinished) {
                 // Check if next batch was already started
                 $nextBatchIndex = $batchIndex + 1;
                 $nextBatchStarted = StepRun::where('workflow_run_id', $run->id)
                     ->whereBetween('sort_order', [$nextBatchIndex * 100, $nextBatchIndex * 100 + 99])
                     ->exists();
 
-                if (!$nextBatchStarted) {
+                if (! $nextBatchStarted) {
                     $this->startBatch($run, $nextBatchIndex);
                 }
             }
@@ -185,9 +183,6 @@ class WorkflowExecutor
     /**
      * Execute a single node.
      *
-     * @param array $node
-     * @param array $context
-     * @return array
      * @throws Exception
      */
     public function executeNode(array $node, array &$context): array
@@ -200,11 +195,6 @@ class WorkflowExecutor
 
     /**
      * Handle step execution failure.
-     *
-     * @param StepRun $stepRun
-     * @param Exception $exception
-     * @param array $node
-     * @return void
      */
     public function handleStepFailure(StepRun $stepRun, Exception $exception, array $node): void
     {
@@ -245,7 +235,7 @@ class WorkflowExecutor
             $workflowRun->update([
                 'status' => 'failed',
                 'finished_at' => now(),
-                'error_message' => "Step {$stepRun->node_id} failed: " . $exception->getMessage(),
+                'error_message' => "Step {$stepRun->node_id} failed: ".$exception->getMessage(),
                 'duration' => (int) $workflowRun->started_at->diffInMilliseconds(now()),
             ]);
 
@@ -255,11 +245,6 @@ class WorkflowExecutor
 
     /**
      * Create a step run record.
-     *
-     * @param string $workflowRunId
-     * @param string $nodeId
-     * @param array $node
-     * @return StepRun
      */
     private function createStepRun(string $workflowRunId, string $nodeId, array $node, int $sortOrder, array $input): StepRun
     {
@@ -279,10 +264,6 @@ class WorkflowExecutor
 
     /**
      * Find node by ID in definition.
-     *
-     * @param array $definition
-     * @param string $nodeId
-     * @return array|null
      */
     private function findNode(array $definition, string $nodeId): ?array
     {
@@ -294,5 +275,4 @@ class WorkflowExecutor
 
         return null;
     }
-
 }

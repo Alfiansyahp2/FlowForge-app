@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\Models\WorkflowRun;
-use App\Models\StepRun;
 use App\Events\WorkflowFailed;
+use App\Models\StepRun;
+use App\Models\WorkflowRun;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -38,6 +38,7 @@ class CheckWorkflowTimeouts extends Command
 
         if ($timedOutRuns->isEmpty()) {
             $this->info('No timed-out workflow runs found.');
+
             return self::SUCCESS;
         }
 
@@ -58,7 +59,7 @@ class CheckWorkflowTimeouts extends Command
             $run->update([
                 'status' => 'timeout',
                 'finished_at' => now(),
-                'error_message' => 'Workflow run timed out (exceeded limit of ' . $run->timeout_seconds . ' seconds)',
+                'error_message' => 'Workflow run timed out (exceeded limit of '.$run->timeout_seconds.' seconds)',
                 'duration' => (int) $run->started_at->diffInMilliseconds(now()),
             ]);
 

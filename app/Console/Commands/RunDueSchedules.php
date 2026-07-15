@@ -25,7 +25,8 @@ class RunDueSchedules extends Command
 
     private WorkflowExecutor $executor;
 
-    public function __construct(WorkflowExecutor $executor) {
+    public function __construct(WorkflowExecutor $executor)
+    {
         parent::__construct();
         $this->executor = $executor;
     }
@@ -42,6 +43,7 @@ class RunDueSchedules extends Command
 
         if ($schedules->isEmpty()) {
             $this->info('No due schedules found.');
+
             return self::SUCCESS;
         }
 
@@ -54,8 +56,9 @@ class RunDueSchedules extends Command
                 // Get workflow version to use
                 $version = $schedule->workflowVersion ?? $schedule->workflow->currentVersion;
 
-                if (!$version) {
-                    $this->warn("  - Skipped: Workflow has no active version");
+                if (! $version) {
+                    $this->warn('  - Skipped: Workflow has no active version');
+
                     continue;
                 }
 

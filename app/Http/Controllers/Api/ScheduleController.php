@@ -12,19 +12,19 @@ use App\WorkflowEngine\WorkflowExecutor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Validation\ValidationException;
 
 class ScheduleController extends Controller
 {
     private WorkflowExecutor $executor;
 
-    public function __construct(WorkflowExecutor $executor) {
+    public function __construct(WorkflowExecutor $executor)
+    {
         $this->executor = $executor;
     }
 
     /**
      * Display a listing of schedules.
-     *
-     * @return AnonymousResourceCollection
      */
     public function index(): AnonymousResourceCollection
     {
@@ -38,8 +38,7 @@ class ScheduleController extends Controller
     /**
      * Store a newly created schedule in storage.
      *
-     * @param Request $request
-     * @return ScheduleResource
+     * @param  Request  $request
      */
     public function store(StoreScheduleRequest $request): ScheduleResource
     {
@@ -49,8 +48,8 @@ class ScheduleController extends Controller
 
         // Validate cron expression (basic validation)
         $cronExpression = $request->input('cron_expression');
-        if (!$this->isValidCronExpression($cronExpression)) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
+        if (! $this->isValidCronExpression($cronExpression)) {
+            throw ValidationException::withMessages([
                 'cron_expression' => 'Cron expression must be in valid format (e.g., "* * * * *")',
             ]);
         }
@@ -74,9 +73,6 @@ class ScheduleController extends Controller
 
     /**
      * Display the specified schedule.
-     *
-     * @param Schedule $schedule
-     * @return ScheduleResource
      */
     public function show(Schedule $schedule): ScheduleResource
     {
@@ -88,9 +84,7 @@ class ScheduleController extends Controller
     /**
      * Update the specified schedule in storage.
      *
-     * @param Request $request
-     * @param Schedule $schedule
-     * @return ScheduleResource
+     * @param  Request  $request
      */
     public function update(UpdateScheduleRequest $request, Schedule $schedule): ScheduleResource
     {
@@ -98,8 +92,8 @@ class ScheduleController extends Controller
         // Validate cron expression if provided
         if ($request->has('cron_expression')) {
             $cronExpression = $request->input('cron_expression');
-            if (!$this->isValidCronExpression($cronExpression)) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
+            if (! $this->isValidCronExpression($cronExpression)) {
+                throw ValidationException::withMessages([
                     'cron_expression' => 'Cron expression must be in valid format (e.g., "* * * * *")',
                 ]);
             }
@@ -123,9 +117,6 @@ class ScheduleController extends Controller
 
     /**
      * Remove the specified schedule from storage.
-     *
-     * @param Schedule $schedule
-     * @return JsonResponse
      */
     public function destroy(Schedule $schedule): JsonResponse
     {
@@ -138,13 +129,10 @@ class ScheduleController extends Controller
 
     /**
      * Trigger a schedule immediately (manual trigger).
-     *
-     * @param Schedule $schedule
-     * @return JsonResponse
      */
     public function trigger(Schedule $schedule): JsonResponse
     {
-        if (!$schedule->is_active) {
+        if (! $schedule->is_active) {
             return response()->json([
                 'error' => 'Schedule is not active',
             ], 400);
@@ -156,7 +144,7 @@ class ScheduleController extends Controller
         // Determine which version to use
         $version = $schedule->workflowVersion ?? $workflow->currentVersion;
 
-        if (!$version) {
+        if (! $version) {
             return response()->json([
                 'error' => 'Workflow has no active version',
             ], 404);
@@ -191,18 +179,15 @@ class ScheduleController extends Controller
 
     /**
      * Toggle schedule active status.
-     *
-     * @param Schedule $schedule
-     * @return ScheduleResource
      */
     public function toggle(Schedule $schedule): ScheduleResource
     {
         $schedule->update([
-            'is_active' => !$schedule->is_active,
+            'is_active' => ! $schedule->is_active,
         ]);
 
         // If activating, update next run time
-        if ($schedule->is_active && !$schedule->next_run_at) {
+        if ($schedule->is_active && ! $schedule->next_run_at) {
             $schedule->updateNextRun();
         }
 
@@ -211,9 +196,6 @@ class ScheduleController extends Controller
 
     /**
      * Validate cron expression (basic validation).
-     *
-     * @param string $expression
-     * @return bool
      */
     private function isValidCronExpression(string $expression): bool
     {
@@ -235,12 +217,12 @@ class ScheduleController extends Controller
         ];
 
         foreach ($parts as $index => $part) {
-            if (empty($part)) {
-                return false;
+            if (empty($part) && $part !== '0') {
+                throw \Illuminate\Validation\ValidationException::withMessages(['cron_expression' => "Empty part at index $index"]);
             }
 
-            if (!preg_match($validPatterns[$index], $part)) {
-                return false;
+            if (! preg_match($validPatterns[$index], $part)) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['cron_expression' => "Regex failed at index $index for part '$part'"]);
             }
         }
 

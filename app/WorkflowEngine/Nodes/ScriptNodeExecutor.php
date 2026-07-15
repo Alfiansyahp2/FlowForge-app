@@ -23,16 +23,16 @@ class ScriptNodeExecutor implements ExecutableNodeInterface
     public function execute(array $node, array &$context): array
     {
         $code = $node['data']['code'] ?? '';
-        
+
         try {
             $result = $this->evaluator->evaluate($code, $context['variables'] ?? []);
-            
+
             return [
                 'result' => $result,
-                'status' => 'success'
+                'status' => 'success',
             ];
         } catch (\Throwable $e) {
-            throw new Exception("Script execution failed: " . $e->getMessage());
+            throw new Exception('Script execution failed: '.$e->getMessage());
         }
     }
 }

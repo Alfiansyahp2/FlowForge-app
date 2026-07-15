@@ -4,8 +4,8 @@ namespace App\WorkflowEngine\Nodes;
 
 use App\WorkflowEngine\Contracts\ExecutableNodeInterface;
 use App\WorkflowEngine\SafeExpressionEvaluator;
-use Illuminate\Support\Facades\Log;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 class MathNodeExecutor implements ExecutableNodeInterface
 {

@@ -9,8 +9,8 @@ class TopologicalSorter
     /**
      * Sort workflow nodes topologically.
      *
-     * @param array $definition
      * @return array - Ordered list of node IDs ready for execution
+     *
      * @throws Exception
      */
     public function sort(array $definition): array
@@ -28,7 +28,7 @@ class TopologicalSorter
         $sorted = [];
 
         // Process nodes in topological order
-        while (!empty($queue)) {
+        while (! empty($queue)) {
             $node = array_shift($queue);
             $sorted[] = $node;
 
@@ -56,8 +56,8 @@ class TopologicalSorter
      * Returns array where each element is a list of node IDs
      * that can be executed in parallel.
      *
-     * @param array $definition
      * @return array - Array of arrays, each representing an execution level
+     *
      * @throws Exception
      */
     public function getExecutionLevels(array $definition): array
@@ -82,7 +82,7 @@ class TopologicalSorter
             $level = $maxParentLevel + 1;
             $nodeLevels[$node] = $level;
 
-            if (!isset($levels[$level])) {
+            if (! isset($levels[$level])) {
                 $levels[$level] = [];
             }
 
@@ -95,8 +95,6 @@ class TopologicalSorter
     /**
      * Get execution batches with dependency resolution.
      *
-     * @param array $definition
-     * @return array
      * @throws Exception
      */
     public function getExecutionBatches(array $definition): array
@@ -115,9 +113,9 @@ class TopologicalSorter
     /**
      * Get critical path (longest path through the DAG).
      *
-     * @param array $definition
-     * @param array $nodeDurations - Array of node_id => duration in seconds
+     * @param  array  $nodeDurations  - Array of node_id => duration in seconds
      * @return array - Array of node IDs in the critical path
+     *
      * @throws Exception
      */
     public function getCriticalPath(array $definition, array $nodeDurations = []): array
@@ -187,9 +185,6 @@ class TopologicalSorter
 
     /**
      * Build adjacency list from definition.
-     *
-     * @param array $definition
-     * @return array
      */
     private function buildGraph(array $definition): array
     {
@@ -205,7 +200,7 @@ class TopologicalSorter
             $source = $edge['source'];
             $target = $edge['target'];
 
-            if (!isset($graph[$source])) {
+            if (! isset($graph[$source])) {
                 $graph[$source] = [];
             }
 
@@ -217,9 +212,6 @@ class TopologicalSorter
 
     /**
      * Calculate in-degrees for all nodes.
-     *
-     * @param array $definition
-     * @return array
      */
     private function calculateInDegrees(array $definition): array
     {
@@ -234,7 +226,7 @@ class TopologicalSorter
         foreach ($definition['edges'] ?? [] as $edge) {
             $target = $edge['target'];
 
-            if (!isset($inDegrees[$target])) {
+            if (! isset($inDegrees[$target])) {
                 $inDegrees[$target] = 0;
             }
 
@@ -246,25 +238,20 @@ class TopologicalSorter
 
     /**
      * Get nodes with 0 in-degree.
-     *
-     * @param array $inDegrees
-     * @return array
      */
     private function getZeroInDegreeNodes(array $inDegrees): array
     {
-        return array_keys(array_filter($inDegrees, fn($degree) => $degree === 0));
+        return array_keys(array_filter($inDegrees, fn ($degree) => $degree === 0));
     }
 
     /**
      * Validate that a workflow is a DAG and can be sorted.
-     *
-     * @param array $definition
-     * @return bool
      */
     public function isSortable(array $definition): bool
     {
         try {
             $this->sort($definition);
+
             return true;
         } catch (Exception $e) {
             return false;

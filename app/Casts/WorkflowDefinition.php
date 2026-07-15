@@ -24,12 +24,12 @@ class WorkflowDefinition implements CastsAttributes
         // If it's a string, decode it
         if (is_string($value)) {
             $decoded = json_decode($value, true);
-            
+
             // If decoded value is a string (double-encoded), decode again
             if (is_string($decoded)) {
                 $decoded = json_decode($decoded, true);
             }
-            
+
             return $decoded ?? [];
         }
 

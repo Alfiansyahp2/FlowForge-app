@@ -10,7 +10,7 @@ class SafeExpressionEvaluatorTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->evaluator = new SafeExpressionEvaluator();
+        $this->evaluator = new SafeExpressionEvaluator;
     }
 
     /** @test */
@@ -174,7 +174,7 @@ class SafeExpressionEvaluatorTest extends TestCase
         $this->assertTrue($result);
 
         // Attempting to inject code should fail safely
-        $this->expectException(\Exception::class);
+        $this->expectException(Exception::class);
         $this->evaluator->evaluate('system("ls")', $variables);
     }
 

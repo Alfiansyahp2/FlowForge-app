@@ -8,9 +8,6 @@ class CycleDetector
 {
     /**
      * Detect if a workflow definition contains cycles.
-     *
-     * @param array $definition
-     * @return bool
      */
     public function hasCycle(array $definition): bool
     {
@@ -26,7 +23,7 @@ class CycleDetector
         $recursionStack = [];
 
         foreach ($graph as $node => $neighbors) {
-            if (!isset($visited[$node])) {
+            if (! isset($visited[$node])) {
                 if ($this->hasCycleUtil($node, $graph, $visited, $recursionStack)) {
                     return true;
                 }
@@ -38,9 +35,6 @@ class CycleDetector
 
     /**
      * Get all nodes involved in cycles.
-     *
-     * @param array $definition
-     * @return array
      */
     public function getCycles(array $definition): array
     {
@@ -54,7 +48,7 @@ class CycleDetector
         $path = [];
 
         foreach ($graph as $node => $neighbors) {
-            if (!isset($visited[$node])) {
+            if (! isset($visited[$node])) {
                 $this->findCyclesUtil($node, $graph, $visited, $path, $cycles);
             }
         }
@@ -65,8 +59,6 @@ class CycleDetector
     /**
      * Validate workflow and throw exception if cycles found.
      *
-     * @param array $definition
-     * @return void
      * @throws Exception
      */
     public function validate(array $definition): void
@@ -74,7 +66,7 @@ class CycleDetector
         if ($this->hasCycle($definition)) {
             $cycles = $this->getCycles($definition);
             throw new Exception(
-                'Workflow contains circular dependencies. Cycles detected: ' .
+                'Workflow contains circular dependencies. Cycles detected: '.
                 json_encode($cycles)
             );
         }
@@ -82,9 +74,6 @@ class CycleDetector
 
     /**
      * Build adjacency list from definition.
-     *
-     * @param array $definition
-     * @return array
      */
     private function buildGraph(array $definition): array
     {
@@ -100,10 +89,10 @@ class CycleDetector
             $source = $edge['source'];
             $target = $edge['target'];
 
-            if (!isset($graph[$source])) {
+            if (! isset($graph[$source])) {
                 $graph[$source] = [];
             }
-            if (!isset($graph[$target])) {
+            if (! isset($graph[$target])) {
                 $graph[$target] = [];
             }
 
@@ -115,21 +104,15 @@ class CycleDetector
 
     /**
      * DFS utility to detect cycles.
-     *
-     * @param string $node
-     * @param array $graph
-     * @param array &$visited
-     * @param array &$recursionStack
-     * @return bool
      */
     private function hasCycleUtil(string $node, array $graph, array &$visited, array &$recursionStack): bool
     {
-        if (!isset($visited[$node])) {
+        if (! isset($visited[$node])) {
             $visited[$node] = true;
             $recursionStack[$node] = true;
 
             foreach ($graph[$node] ?? [] as $neighbor) {
-                if (!isset($visited[$neighbor])) {
+                if (! isset($visited[$neighbor])) {
                     if ($this->hasCycleUtil($neighbor, $graph, $visited, $recursionStack)) {
                         return true;
                     }
@@ -146,13 +129,6 @@ class CycleDetector
 
     /**
      * DFS utility to find all cycles.
-     *
-     * @param string $node
-     * @param array $graph
-     * @param array &$visited
-     * @param array $path
-     * @param array &$cycles
-     * @return void
      */
     private function findCyclesUtil(string $node, array $graph, array &$visited, array $path, array &$cycles): void
     {
@@ -160,7 +136,7 @@ class CycleDetector
         $path[] = $node;
 
         foreach ($graph[$node] ?? [] as $neighbor) {
-            if (!isset($visited[$neighbor])) {
+            if (! isset($visited[$neighbor])) {
                 $this->findCyclesUtil($neighbor, $graph, $visited, $path, $cycles);
             } elseif (in_array($neighbor, $path)) {
                 // Found a cycle

@@ -2,11 +2,12 @@
 
 namespace App\Http\Resources;
 
+use App\Models\WorkflowVersion;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\WorkflowVersion
+ * @mixin WorkflowVersion
  */
 class WorkflowVersionResource extends JsonResource
 {

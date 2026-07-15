@@ -32,7 +32,7 @@ class StoreScheduleRequest extends FormRequest
             'is_active' => ['sometimes', 'boolean'],
         ];
     }
-    
+
     /**
      * Get custom messages for validator errors.
      *

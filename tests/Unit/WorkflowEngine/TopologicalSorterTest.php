@@ -10,7 +10,7 @@ class TopologicalSorterTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->sorter = new TopologicalSorter();
+        $this->sorter = new TopologicalSorter;
     }
 
     /** @test */
@@ -108,7 +108,7 @@ class TopologicalSorterTest extends TestCase
             ],
         ];
 
-        $this->expectException(\Exception::class);
+        $this->expectException(Exception::class);
         $this->expectExceptionMessage('graph contains cycles');
 
         $this->sorter->sort($definition);

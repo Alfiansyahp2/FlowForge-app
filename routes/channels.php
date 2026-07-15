@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Broadcast;
-use App\Broadcasting\WorkflowChannel;
 use App\Broadcasting\TenantChannel;
+use App\Broadcasting\WorkflowChannel;
+use Illuminate\Support\Facades\Broadcast;
 
 /*
 |--------------------------------------------------------------------------

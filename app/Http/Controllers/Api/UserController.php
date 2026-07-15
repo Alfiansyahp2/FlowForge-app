@@ -18,15 +18,15 @@ class UserController extends Controller
     public function index(Request $request): JsonResponse
     {
         $perPage = $request->input('per_page', 15);
-        $search  = $request->input('search');
-        $role    = $request->input('role');
+        $search = $request->input('search');
+        $role = $request->input('role');
 
         $query = User::query()->with('roles');
 
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -37,12 +37,12 @@ class UserController extends Controller
         $users = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
         return response()->json([
-            'data' => $users->map(fn($u) => $this->format($u)),
+            'data' => $users->map(fn ($u) => $this->format($u)),
             'meta' => [
                 'current_page' => $users->currentPage(),
-                'last_page'    => $users->lastPage(),
-                'per_page'     => $users->perPage(),
-                'total'        => $users->total(),
+                'last_page' => $users->lastPage(),
+                'per_page' => $users->perPage(),
+                'total' => $users->total(),
             ],
         ]);
     }
@@ -63,21 +63,21 @@ class UserController extends Controller
         $tenantId = $request->user()->tenant_id;
 
         $validated = $request->validate([
-            'name'     => ['required', 'string', 'max:255'],
-            'email'    => [
+            'name' => ['required', 'string', 'max:255'],
+            'email' => [
                 'required', 'email', 'max:255',
                 Rule::unique('users')->where('tenant_id', $tenantId),
             ],
             'password' => ['required', 'confirmed', Password::defaults()],
-            'role'     => ['required', Rule::in(['admin', 'editor', 'viewer'])],
+            'role' => ['required', Rule::in(['admin', 'editor', 'viewer'])],
         ]);
 
         $user = User::create([
             'tenant_id' => $tenantId,
-            'name'      => $validated['name'],
-            'email'     => $validated['email'],
-            'password'  => Hash::make($validated['password']),
-            'role'      => $validated['role'],
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => $validated['role'],
             'is_active' => true,
         ]);
 
@@ -94,14 +94,14 @@ class UserController extends Controller
         $tenantId = $request->user()->tenant_id;
 
         $validated = $request->validate([
-            'name'      => ['sometimes', 'string', 'max:255'],
-            'email'     => [
+            'name' => ['sometimes', 'string', 'max:255'],
+            'email' => [
                 'sometimes', 'email', 'max:255',
                 Rule::unique('users')->where('tenant_id', $tenantId)->ignore($user->id),
             ],
-            'role'      => ['sometimes', Rule::in(['admin', 'editor', 'viewer'])],
+            'role' => ['sometimes', Rule::in(['admin', 'editor', 'viewer'])],
             'is_active' => ['sometimes', 'boolean'],
-            'password'  => ['sometimes', 'confirmed', Password::defaults()],
+            'password' => ['sometimes', 'confirmed', Password::defaults()],
         ]);
 
         if (isset($validated['password'])) {
@@ -153,11 +153,11 @@ class UserController extends Controller
     private function format(User $user): array
     {
         return [
-            'id'         => $user->id,
-            'name'       => $user->name,
-            'email'      => $user->email,
-            'role'       => $user->role,
-            'is_active'  => $user->is_active,
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'is_active' => $user->is_active,
             'created_at' => $user->created_at?->toISOString(),
             'updated_at' => $user->updated_at?->toISOString(),
         ];

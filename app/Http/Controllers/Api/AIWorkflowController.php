@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\WorkflowEngine\WorkflowValidator;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Exception;
 
 class AIWorkflowController extends Controller
 {
@@ -45,13 +45,13 @@ class AIWorkflowController extends Controller
                 $definition = json_decode($definition, true);
             }
 
-            if (!is_array($definition)) {
-                throw new Exception("LLM returned non-JSON output");
+            if (! is_array($definition)) {
+                throw new Exception('LLM returned non-JSON output');
             }
 
             // Ensure schema compatibility and validate
             $errors = $this->validator->validate($definition);
-            if (!empty($errors)) {
+            if (! empty($errors)) {
                 return response()->json([
                     'error' => 'Generated workflow failed validation',
                     'errors' => $errors,
@@ -82,7 +82,7 @@ class AIWorkflowController extends Controller
      */
     private function generateWithLLM(string $userPrompt, string $apiKey): array
     {
-        $systemPrompt = <<<PROMPT
+        $systemPrompt = <<<'PROMPT'
 You are a Staff Workflow Systems Architect. Your job is to translate a user's natural language request into a valid Workflow DAG (Directed Acyclic Graph) JSON structure.
 You MUST output raw JSON ONLY. No markdown block wrapper, no explanations, no HTML.
 
@@ -118,7 +118,7 @@ PROMPT;
 
         $response = Http::withToken($apiKey)
             ->timeout(30)
-            ->post(rtrim($baseUrl, '/') . '/chat/completions', [
+            ->post(rtrim($baseUrl, '/').'/chat/completions', [
                 'model' => $model,
                 'messages' => [
                     ['role' => 'system', 'content' => $systemPrompt],
@@ -129,7 +129,7 @@ PROMPT;
             ]);
 
         if ($response->failed()) {
-            throw new Exception("LLM API call failed: " . $response->body());
+            throw new Exception('LLM API call failed: '.$response->body());
         }
 
         $content = $response->json('choices.0.message.content');
@@ -176,9 +176,9 @@ PROMPT;
             // Try to extract minutes/seconds
             $seconds = 300; // 5 mins default
             if (preg_match('/(\d+)\s*minute/', $lowerPrompt, $m)) {
-                $seconds = (int)$m[1] * 60;
+                $seconds = (int) $m[1] * 60;
             } elseif (preg_match('/(\d+)\s*second/', $lowerPrompt, $m)) {
-                $seconds = (int)$m[1];
+                $seconds = (int) $m[1];
             }
 
             $nodes[] = [
@@ -196,7 +196,7 @@ PROMPT;
                 'id' => 'notify-1',
                 'type' => 'notification',
                 'data' => [
-                    'message' => 'Workflow complete! NLP Prompt: ' . substr($prompt, 0, 50),
+                    'message' => 'Workflow complete! NLP Prompt: '.substr($prompt, 0, 50),
                 ],
             ];
         }
@@ -207,7 +207,7 @@ PROMPT;
                 'id' => 'notify-1',
                 'type' => 'notification',
                 'data' => [
-                    'message' => 'NLP workflow generated: ' . $prompt,
+                    'message' => 'NLP workflow generated: '.$prompt,
                 ],
             ];
         }
@@ -238,6 +238,7 @@ PROMPT;
             $string = preg_replace('/```$/', '', $string);
             $string = trim($string);
         }
+
         return $string;
     }
 }

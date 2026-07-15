@@ -5,7 +5,6 @@ namespace App\Events;
 use App\Models\WorkflowRun;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -26,7 +25,7 @@ class WorkflowStarted implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new \Illuminate\Broadcasting\Channel('workflows.' . $this->workflowRun->workflow_id),
+            new Channel('workflows.'.$this->workflowRun->workflow_id),
         ];
     }
 

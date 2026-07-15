@@ -3,16 +3,15 @@
 namespace Tests\Feature;
 
 use App\Jobs\ExecuteStepJob;
+use App\Models\StepRun;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Workflow;
-use App\Models\WorkflowRun;
 use App\Models\WorkflowVersion;
-use App\Models\StepRun;
 use App\WorkflowEngine\WorkflowExecutor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class WorkflowExecutorTest extends TestCase
@@ -20,9 +19,13 @@ class WorkflowExecutorTest extends TestCase
     use RefreshDatabase;
 
     private Tenant $tenant;
+
     private User $user;
+
     private Workflow $workflow;
+
     private WorkflowVersion $version;
+
     private WorkflowExecutor $executor;
 
     protected function setUp(): void
@@ -165,17 +168,17 @@ class WorkflowExecutorTest extends TestCase
 
         // Now Batch 1 should be dispatched
         Queue::assertPushed(ExecuteStepJob::class, 3); // 2 from batch 0 + 1 from batch 1
-        
+
         $allStepRuns = StepRun::where('workflow_run_id', $run->id)->get();
         $this->assertCount(3, $allStepRuns);
-        
+
         $notifyStep = $allStepRuns->firstWhere('node_id', 'notify_1');
         $this->assertNotNull($notifyStep);
         $this->assertEquals('pending', $notifyStep->status);
 
         // Manually execute Batch 1
         (new ExecuteStepJob($notifyStep))->handle();
-        
+
         // Finally, the workflow run should be marked completed
         $run->refresh();
         $this->assertEquals('completed', $run->status);
@@ -219,7 +222,7 @@ class WorkflowExecutorTest extends TestCase
         // Manually handle 3rd failure (retry count 2 exceeded max_retries limit of 2)
         (new ExecuteStepJob($httpStep))->handle();
         $httpStep->refresh();
-        
+
         // Since retries are exhausted, the workflow run should be marked failed
         $run->refresh();
         $this->assertEquals('failed', $run->status);

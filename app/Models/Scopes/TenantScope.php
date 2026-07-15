@@ -5,6 +5,7 @@ namespace App\Models\Scopes;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
+use Illuminate\Support\Facades\Schema;
 
 class TenantScope implements Scope
 {
@@ -24,7 +25,7 @@ class TenantScope implements Scope
 
             // Check if table has tenant_id column
             if ($this->tableHasColumn($table, 'tenant_id')) {
-                $query->where($table . '.tenant_id', tenantId());
+                $query->where($table.'.tenant_id', tenantId());
             }
         }
     }
@@ -35,7 +36,8 @@ class TenantScope implements Scope
     protected function tableHasColumn(string $table, string $column): bool
     {
         try {
-            $columns = \Illuminate\Support\Facades\Schema::getColumnListing($table);
+            $columns = Schema::getColumnListing($table);
+
             return in_array($column, $columns);
         } catch (\Exception $e) {
             return false;
