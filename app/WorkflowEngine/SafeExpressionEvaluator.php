@@ -20,10 +20,10 @@ class SafeExpressionEvaluator
      *
      * @param string $expression
      * @param array $variables
-     * @return bool
+     * @return mixed
      * @throws Exception
      */
-    public function evaluate(string $expression, array $variables = []): bool
+    public function evaluate(string $expression, array $variables = [])
     {
         // Replace variables in expression
         $expression = $this->replaceVariables($expression, $variables);
@@ -32,7 +32,7 @@ class SafeExpressionEvaluator
         $tokens = $this->tokenize($expression);
         $result = $this->parseExpression($tokens);
 
-        return (bool) $result;
+        return $result;
     }
 
     /**
