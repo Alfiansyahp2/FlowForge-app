@@ -84,11 +84,11 @@ class Schedule extends Model
     /**
      * Calculate next run time based on cron expression.
      */
-    public function calculateNextRun(): \DateTime
+    public function calculateNextRun(): \Carbon\Carbon
     {
         try {
             $cron = new \Cron\CronExpression($this->cron_expression);
-            return $cron->getNextRunDate('now', 0, false, $this->timezone ?? 'UTC');
+            return \Carbon\Carbon::instance($cron->getNextRunDate('now', 0, false, $this->timezone ?? 'UTC'));
         } catch (\Exception $e) {
             // Fallback if cron is invalid
             return now()->addMinute();
