@@ -82,9 +82,9 @@ class RealWorldWorkflowTest extends TestCase
                 ],
                 [
                     'id' => 'process_data',
-                    'type' => 'script',
+                    'type' => 'script', // Now acts as a safe math/expression evaluator
                     'data' => [
-                        'code' => '$body = json_decode($fetch_data["body"], true); return "Temperature is " . $body["temp"] . "C";',
+                        'code' => '{fetch_data.status} + 100',
                     ],
                 ],
                 [
@@ -98,7 +98,6 @@ class RealWorldWorkflowTest extends TestCase
                     'id' => 'send_alert',
                     'type' => 'notification',
                     'data' => [
-                        // Notification node uses replaceVariables which needs {curly_braces} for strings
                         'message' => 'Processed Result: {process_data.result}',
                     ],
                 ],
@@ -167,10 +166,10 @@ class RealWorldWorkflowTest extends TestCase
         
         $scriptStep->refresh();
         $this->assertEquals('completed', $scriptStep->status);
-        $this->assertStringContainsString('Temperature is 25C', $scriptStep->output['result']);
+        $this->assertEquals(300, $scriptStep->output['result']);
 
         echo "\n--- HASIL NODE SCRIPT ---\n";
-        echo "Hasil Eksekusi Script PHP: " . $scriptStep->output['result'] . "\n";
+        echo "Hasil Eksekusi Script Aman (200 + 100): " . $scriptStep->output['result'] . "\n";
 
         // --- BATCH 3: DELAY NODE ---
         $delayStep = StepRun::where('workflow_run_id', $run->id)->where('node_id', 'wait_moment')->first();
@@ -187,7 +186,7 @@ class RealWorldWorkflowTest extends TestCase
         
         $notifyStep->refresh();
         $this->assertEquals('completed', $notifyStep->status);
-        $this->assertEquals('Processed Result: Temperature is 25C', $notifyStep->output['message']);
+        $this->assertEquals('Processed Result: 300', $notifyStep->output['message']);
 
         // Assert workflow run is completed successfully
         $run->refresh();
