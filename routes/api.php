@@ -20,10 +20,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Public authentication routes
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
-
+// Public authentication routes (with anti brute-force rate limiting)
+Route::middleware('throttle:auth')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+});
 // Protected authentication routes
 Route::middleware(['auth:sanctum', \App\Http\Middleware\IdentifyTenant::class])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
