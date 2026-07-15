@@ -4,10 +4,6 @@ namespace App\Console\Commands;
 
 use App\Models\Schedule;
 use App\WorkflowEngine\WorkflowExecutor;
-use App\WorkflowEngine\WorkflowValidator;
-use App\WorkflowEngine\TopologicalSorter;
-use App\WorkflowEngine\RetryManager;
-use App\WorkflowEngine\SafeExpressionEvaluator;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -29,14 +25,9 @@ class RunDueSchedules extends Command
 
     private WorkflowExecutor $executor;
 
-    public function __construct(
-        WorkflowValidator $validator,
-        TopologicalSorter $sorter,
-        RetryManager $retryManager,
-        SafeExpressionEvaluator $expressionEvaluator
-    ) {
+    public function __construct(WorkflowExecutor $executor) {
         parent::__construct();
-        $this->executor = new WorkflowExecutor($validator, $sorter, $retryManager, $expressionEvaluator);
+        $this->executor = $executor;
     }
 
     /**

@@ -7,10 +7,6 @@ use App\Http\Resources\WebhookResource;
 use App\Models\Webhook;
 use App\Models\Workflow;
 use App\WorkflowEngine\WorkflowExecutor;
-use App\WorkflowEngine\WorkflowValidator;
-use App\WorkflowEngine\TopologicalSorter;
-use App\WorkflowEngine\RetryManager;
-use App\WorkflowEngine\SafeExpressionEvaluator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,13 +16,8 @@ class WebhookController extends Controller
 {
     private WorkflowExecutor $executor;
 
-    public function __construct(
-        WorkflowValidator $validator,
-        TopologicalSorter $sorter,
-        RetryManager $retryManager,
-        SafeExpressionEvaluator $expressionEvaluator
-    ) {
-        $this->executor = new WorkflowExecutor($validator, $sorter, $retryManager, $expressionEvaluator);
+    public function __construct(WorkflowExecutor $executor) {
+        $this->executor = $executor;
     }
 
     /**

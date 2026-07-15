@@ -23,28 +23,18 @@ class WorkflowExecutor
     private WorkflowValidator $validator;
     private TopologicalSorter $sorter;
     private RetryManager $retryManager;
-    private SafeExpressionEvaluator $expressionEvaluator;
-
-    // Node type handlers
-    private const NODE_HANDLERS = [
-        'http' => 'executeHttpNode',
-        'delay' => 'executeDelayNode',
-        'condition' => 'executeConditionNode',
-        'math' => 'executeMathNode',
-        'notification' => 'executeNotificationNode',
-        'script' => 'executeScriptNode',
-    ];
+    private NodeRegistry $nodeRegistry;
 
     public function __construct(
         WorkflowValidator $validator,
         TopologicalSorter $sorter,
         RetryManager $retryManager,
-        ?SafeExpressionEvaluator $expressionEvaluator = null
+        ?NodeRegistry $nodeRegistry = null
     ) {
         $this->validator = $validator;
         $this->sorter = $sorter;
         $this->retryManager = $retryManager;
-        $this->expressionEvaluator = $expressionEvaluator ?? app(SafeExpressionEvaluator::class);
+        $this->nodeRegistry = $nodeRegistry ?? app(NodeRegistry::class);
     }
 
     /**
@@ -203,159 +193,9 @@ class WorkflowExecutor
     public function executeNode(array $node, array &$context): array
     {
         $nodeType = $node['type'];
-        $handler = self::NODE_HANDLERS[$nodeType] ?? null;
+        $executor = $this->nodeRegistry->getExecutor($nodeType);
 
-        if (!$handler) {
-            throw new Exception("Unsupported node type: {$nodeType}");
-        }
-
-        return $this->$handler($node, $context);
-    }
-
-    /**
-     * Execute HTTP request node.
-     *
-     * @param array $node
-     * @param array $context
-     * @return array
-     * @throws Exception
-     */
-    private function executeHttpNode(array $node, array &$context): array
-    {
-        $data = $node['data'];
-        $url = $this->replaceVariables($data['url'] ?? '', $context['variables']);
-        $method = strtoupper($data['method'] ?? 'GET');
-        $headers = $data['headers'] ?? [];
-        $body = $data['body'] ?? null;
-
-        $response = Http::withHeaders($headers)
-            ->timeout($data['timeout'] ?? 30)
-            ->send($method, $url, $body ? ['body' => $body] : []);
-
-        $response->throw();
-
-        return [
-            'status' => $response->status(),
-            'headers' => $response->headers(),
-            'body' => $response->body(),
-        ];
-    }
-
-    /**
-     * Execute delay node.
-     *
-     * @param array $node
-     * @param array $context
-     * @return array
-     */
-    private function executeDelayNode(array $node, array &$context): array
-    {
-        $seconds = $node['data']['seconds'] ?? 0;
-        if ($seconds > 0) {
-            sleep(min((int)$seconds, 60)); // Max 60 seconds delay for safety
-        }
-
-        return [
-            'delayed_seconds' => $seconds,
-        ];
-    }
-
-    /**
-     * Execute script node safely.
-     *
-     * @param array $node
-     * @param array $context
-     * @return array
-     * @throws Exception
-     */
-    private function executeScriptNode(array $node, array &$context): array
-    {
-        $code = $node['data']['code'] ?? '';
-        
-        try {
-            // Use safe expression evaluator instead of dangerous eval()
-            // Note: This limits scripts to mathematical and logical expressions.
-            // If full PHP execution is needed, a dedicated sandbox service should be used.
-            $result = $this->expressionEvaluator->evaluate($code, $context['variables'] ?? []);
-            
-            return [
-                'result' => $result,
-                'status' => 'success'
-            ];
-        } catch (\Throwable $e) {
-            throw new Exception("Script execution failed: " . $e->getMessage());
-        }
-    }
-
-    /**
-     * Execute condition node.
-     *
-     * @param array $node
-     * @param array $context
-     * @return array
-     * @throws Exception
-     */
-    private function executeConditionNode(array $node, array &$context): array
-    {
-        $expression = $node['data']['expression'] ?? '';
-
-        // Use safe expression evaluator instead of eval()
-        $result = $this->expressionEvaluator->evaluate($expression, $context['variables']);
-
-        return [
-            'condition_met' => $result,
-            'expression' => $expression,
-        ];
-    }
-
-    /**
-     * Execute math node (safe alternative to script node).
-     *
-     * @param array $node
-     * @param array $context
-     * @return array
-     * @throws Exception
-     */
-    private function executeMathNode(array $node, array &$context): array
-    {
-        $expression = $node['data']['expression'] ?? '';
-
-        // Use safe expression evaluator for math operations
-        try {
-            $result = $this->expressionEvaluator->evaluate($expression, $context['variables']);
-
-            return [
-                'result' => $result,
-                'expression' => $expression,
-            ];
-        } catch (Exception $e) {
-            Log::warning('Math expression evaluation failed', [
-                'expression' => $expression,
-                'error' => $e->getMessage(),
-            ]);
-
-            throw new Exception("Math expression failed: {$e->getMessage()}");
-        }
-    }
-
-    /**
-     * Execute notification node (placeholder).
-     *
-     * @param array $node
-     * @param array $context
-     * @return array
-     */
-    private function executeNotificationNode(array $node, array &$context): array
-    {
-        $message = $this->replaceVariables($node['data']['message'] ?? '', $context['variables']);
-
-        // Log notification (in production, send to notification service)
-        Log::info('Workflow Notification', ['message' => $message]);
-
-        return [
-            'sent' => true,
-            'message' => $message,
-        ];
+        return $executor->execute($node, $context);
     }
 
     /**
@@ -453,25 +293,6 @@ class WorkflowExecutor
         }
 
         return null;
-    }
-
-    /**
-     * Replace variables in string.
-     *
-     * @param string $string
-     * @param array $variables
-     * @return string
-     */
-    private function replaceVariables(string $string, array $variables): string
-    {
-        foreach ($variables as $key => $value) {
-            // Convert value to string - skip arrays/objects
-            if (is_scalar($value)) {
-                $string = str_replace("{{$key}}", (string)$value, $string);
-            }
-        }
-
-        return $string;
     }
 
 }

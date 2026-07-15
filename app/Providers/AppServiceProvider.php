@@ -14,6 +14,21 @@ class AppServiceProvider extends ServiceProvider
     {
         // Bind TenantService as singleton to maintain tenant state across requests
         $this->app->singleton(\App\Services\TenantService::class);
+
+        // Bind NodeRegistry as singleton
+        $this->app->singleton(\App\WorkflowEngine\NodeRegistry::class, function ($app) {
+            $registry = new \App\WorkflowEngine\NodeRegistry();
+            
+            // Register all executable nodes
+            $registry->register($app->make(\App\WorkflowEngine\Nodes\HttpNodeExecutor::class));
+            $registry->register($app->make(\App\WorkflowEngine\Nodes\DelayNodeExecutor::class));
+            $registry->register($app->make(\App\WorkflowEngine\Nodes\ConditionNodeExecutor::class));
+            $registry->register($app->make(\App\WorkflowEngine\Nodes\ScriptNodeExecutor::class));
+            $registry->register($app->make(\App\WorkflowEngine\Nodes\MathNodeExecutor::class));
+            $registry->register($app->make(\App\WorkflowEngine\Nodes\NotificationNodeExecutor::class));
+
+            return $registry;
+        });
     }
 
     /**
