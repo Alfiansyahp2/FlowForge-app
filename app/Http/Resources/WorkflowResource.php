@@ -24,6 +24,7 @@ class WorkflowResource extends JsonResource
             'description' => $this->description,
             'status' => $this->status,
             'settings' => $this->settings,
+            'current_version_id' => $this->current_version_id,
             'definition' => $this->when($this->currentVersion, function () {
                 return $this->currentVersion->definition;
             }),
