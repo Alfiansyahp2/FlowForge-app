@@ -86,9 +86,13 @@ class Schedule extends Model
      */
     public function calculateNextRun(): \DateTime
     {
-        // Using cron-expression library or Laravel's scheduler
-        // For now, return current timestamp + 1 minute as placeholder
-        return now()->addMinute();
+        try {
+            $cron = new \Cron\CronExpression($this->cron_expression);
+            return $cron->getNextRunDate('now', 0, false, $this->timezone ?? 'UTC');
+        } catch (\Exception $e) {
+            // Fallback if cron is invalid
+            return now()->addMinute();
+        }
     }
 
     /**
